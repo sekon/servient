@@ -29,7 +29,7 @@ with coverage of the test case(s), which are also optional.
 7)AHHHH .. the lines look weird ??
 Set text width to 79 and set text wrap on (which is on by default).
 If you are using vim,
-set tw=80
+set tw=79
 set wrap
 
 8) Anything else ??
