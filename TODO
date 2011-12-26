@@ -1,3 +1,4 @@
-1) Create a $META directory.
+0) Make function get_user_id a little less sucky.
+1) Create and support a $META directory.
 2) Create a post and pre test scipts.
-3) Create a pluggable architeture.
+3) Create a pluggable Architecture (closely related to 0).
