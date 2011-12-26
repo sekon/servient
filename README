@@ -1,7 +1,7 @@
 			Frequently asked questions:
 1)What is servient ??
-servient aims to be a small, simple and flexible black box unit testing
-framework.
+servient aims to be a small, simple, flexible and light weight black box unit
+testing framework.
 
 2)What is so unique about servient ??
 It aims to be a pluggable way to primitively validate scripts written in

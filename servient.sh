@@ -13,6 +13,7 @@
 ####################################### CONFIG DATA #############################################
 SCRIPT_DELAY=2
 REFERENCE_SCRIPTS_DIR_NAME="REF"
+META_DIR_NAME="META"
 USER_INFO_FILE_NAME="user_info.txt"
 USER_INFO_UID_STRING="User ID"
 REPORT_FILE="report.txt"
@@ -52,19 +53,15 @@ then
 	echo "[CONFIG-ERROR] Variable REFERENCE_SCRIPTS_DIR_NAME cant be null"
 	exit 200
 fi
-if [ -z "$USER_INFO_FILE_NAME" ]
+if [ -z "$META_DIR_NAME" ]
 then
-	echo "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME cant be null"
-	exit 200
-fi
-if [ -z "$USER_INFO_UID_STRING" ]
-then
-	echo "[CONFIG-ERROR] Variable USER_INFO_UID_STRING cant be null"
+	echo "[CONFIG-ERROR] Variable META_DIR_NAME cant be null"
 	exit 200
 fi
 if [ -z "$REPORT_FILE" ]
 then
 	echo "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
+	echo "[CONFIG-ERROR] Please initialize this variable, even if you are using custom view"
 	exit 200
 fi
 if [ -z "$VERBOSE_OUTPUT" ]
@@ -79,6 +76,27 @@ then
 	echo "Defaulting to delay of 2 seconds"
 	SCRIPT_DELAY=2
 fi
+if [ -z "$USER_INFO_FILE_NAME" ]
+then
+	echo "[CONFIG-WARN] Variable USER_INFO_FILE_NAME is null"
+	echo "[CONFIG-WARN] All Directories under $PWD will be checked !!"
+	if [ ! -z "$USER_INFO_UID_STRING" ]
+	then
+		echo "[CONFIG-ERROR] Variable USER_INFO_UID_STRING is not null"
+		echo "[CONFIG-ERROR] While USER_INFO_FILE_NAME is null !!"
+		exit 200
+	fi
+fi
+if [ -z "$USER_INFO_UID_STRING" ]
+then
+	echo "[CONFIG-WARN] Variable USER_INFO_UID_STRING is null"
+	if [ ! -z "$USER_INFO_FILE_NAME" ]
+	then
+		echo "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME is not null"
+		echo "[CONFIG-ERROR] While USER_INFO_UID_STRING is null !!"
+		exit 200
+	fi
+fi
 
 DIR_LIST=`find . -maxdepth 1 -name "*" -type d`
 PARENT_DIR=$PWD
@@ -86,7 +104,7 @@ rm -f "$REPORT_FILE"
 for DIR in $DIR_LIST
 do
 	DIR=`echo $DIR| sed 's/^\.\///'`;	
-	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "." ] ) 
+	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "." ] && [ "$DIR" != "$META_DIR_NAME" ] ) 
 	then
 		cd $DIR
 		MAGIC_STRING=""
