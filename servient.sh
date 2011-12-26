@@ -61,7 +61,6 @@ fi
 if [ -z "$REPORT_FILE" ]
 then
 	echo "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
-	echo "[CONFIG-ERROR] Please initialize this variable, even if you are using custom view"
 	exit 200
 fi
 if [ -z "$VERBOSE_OUTPUT" ]
@@ -99,37 +98,43 @@ then
 fi
 
 DIR_LIST=`find . -maxdepth 1 -name "*" -type d`
-PARENT_DIR=$PWD
 rm -f "$REPORT_FILE"
 for DIR in $DIR_LIST
 do
 	DIR=`echo $DIR| sed 's/^\.\///'`;	
-	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "." ] && [ "$DIR" != "$META_DIR_NAME" ] ) 
+	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "$META_DIR_NAME" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
 	then
-		cd $DIR
 		MAGIC_STRING=""
 		SCORE=0
 		USER_ID=$(get_user_id)
-		if ( [ ! -z "$USER_ID"  ] )
+		if ( [ ! -z "$USER_ID"  ] || ( [ -z "$USER_INFO_FILE_NAME" ] && [ -z "$USER_INFO_UID_STRING" ] ) )
 		then
-			FILES=`find . -name "*" -type f`
+			FILES=`find "$DIR" -name "*" -type f`
 			for FILE in $FILES
 			do
 				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
-				FILE_PART=`echo $FILE_NAME | cut -d "." -f 1`
-				if [ -e "$PARENT_DIR/REF/$FILE_NAME" ]
+				FILE_PART=`echo $FILE_NAME | cut -d "." -f 1` ## TODO .. use awk here
+				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" ]
 				then
 					REF_OP=""
 					OUR_OP=""
-					if [ -e "$PARENT_DIR/$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args" ]
+					if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args" ]
 					then
 						VALID_ANSWER=0
-						exec<"$PARENT_DIR/$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args"
+						exec<"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args"
 						while read line
 						do
-							"$PARENT_DIR/$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" $line > op_ref &
+							if [ -f op_ref ]
+							then
+								echo "" > op_ref
+							fi
+							if [ -f op_our ]
+							then
+								echo "" > op_our
+							fi
+							"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" $line > op_ref &
 							REF_PID=$!
-							"./$FILE_NAME" $line > op_our &
+							"$DIR/$FILE_NAME" $line > op_our 
 							OUR_PID=$!
 							if [ -z "$SCRIPT_DELAY" ]	
 							then
@@ -141,7 +146,7 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									echo " Problem running script $PARENT_DIR/REF/$FILE_NAME"
+									echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 								fi
 								exit 255
 							fi
@@ -149,7 +154,7 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									echo " Problem running script $PWD/$FILE_NAME"
+									echo "Problem running script $DIR/$FILE_NAME"
 								fi
 								exit 255
 							fi
@@ -165,6 +170,10 @@ do
 							fi
 							REF_OP=`cat op_ref`
 							OUR_OP=`cat op_our`
+							if [ -z "$USER_ID" ]
+							then
+								USER_ID="$DIR"
+							fi
 							if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
 							then
 								if [ "$REF_OP" = "$OUR_OP" ]
@@ -176,9 +185,9 @@ do
 										echo "$USER_ID:$FILE_NAME-Wrong"
 										echo "broke for input $line"
 									fi
-										MAGIC_STRING="$MAGIC_STRING 0"
-										VALID_ANSWER=0
-									 	break
+									MAGIC_STRING="$MAGIC_STRING 0"
+									VALID_ANSWER=0
+									break
 								fi
 							fi
 						done
@@ -192,9 +201,17 @@ do
 							SCORE=$(( $SCORE + 1 ))
 						fi
 					else
-						"$PARENT_DIR/$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" > op_ref &
+						if [ -f op_ref ]
+						then
+							echo "" > op_ref
+						fi
+						if [ -f op_our ]
+						then
+							echo "" > op_our
+						fi
+						"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" > op_ref &
 						REF_PID=$!
-						"./$FILE_NAME" > op_our &
+						"$DIR/$FILE_NAME" > op_our &
 						OUR_PID=$!
 						if [ -z "$SCRIPT_DELAY" ]	
 						then
@@ -206,7 +223,7 @@ do
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								echo "Problem running script $PARENT_DIR/REF/$FILE_NAME"
+								echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 							fi
 							exit 255
 						fi
@@ -214,7 +231,7 @@ do
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								echo " Problem running script $PWD/$FILE_NAME"
+								echo " Problem running script $DIR/$FILE_NAME"
 							fi
 							exit 255
 						fi
@@ -230,6 +247,10 @@ do
 						fi
 						REF_OP=`cat op_ref`
 						OUR_OP=`cat op_our`
+						if [ -z "$USER_ID" ]
+						then
+							USER_ID="$DIR"
+						fi
 						if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
 						then
 							if [ "$REF_OP" = "$OUR_OP" ]
@@ -253,7 +274,6 @@ do
 			done
 			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
 			echo "$DIR#$MAGIC_STRING,$SCORE" | cat >> "$PARENT_DIR/$REPORT_FILE"
-			cd $PARENT_DIR
 		else
 			if (( $VERBOSE_OUTPUT ))
 			then
@@ -264,3 +284,11 @@ do
 		fi
 	fi
 done	
+if [ -f op_ref ]
+then
+	rm -f op_ref
+fi
+if [ -f op_our ]
+then
+	rm -f op_our
+fi
