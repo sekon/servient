@@ -1,2 +1,30 @@
-All files are licensed under the terms of GPL3, unless specified otherwise.
+Frequently asked questions:
+1)What is servient ??
+servient aims to be a small, simple and flexible black box unit testing framework.
+
+2)What is so unique about servient ??
+It aims to be a pluggable way to validate scripts written in multiple
+languages (both compiled and interpreted).
+
+3)What is the use case servient aims to target ??
+Suppose you are an instructor in a lab and have to validate scripts of "n" 
+students, for a question paper containing "m" questions in one go.
+
+4)You say validation .. could you eloberate ??
+Instuctor provides a reference script for each of the "m" questions, that a
+student could attempt to answer along with test cases to validate student
+scripts.
+
+5)What about security ??
+There are very few security features in place, you have to take necessary
+precautions (like running in a chroot with fine grained access control
+perhaps ??)
+
+6)So a validated script is guarenteed to be correct ??
+No, it is entirely dependent on the instructor provided reference script along
+with coverage of the test case(s), which are also optional.
+
+7) Anything else ??
+Of couse, all files are licensed under the terms of GPL3, unless specified 
+otherwise.
 Project indirectly funded by the tax payers of the Republic of India XD.
