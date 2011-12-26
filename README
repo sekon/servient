@@ -18,7 +18,7 @@ student could attempt to answer along with test cases to validate student
 scripts.
 
 5)What about security ??
-There are very few security features in place, you have to take necessary
+There are *NO* security features in place, you have to take necessary
 precautions (like running in a chroot with fine grained access control
 perhaps ??)
 
