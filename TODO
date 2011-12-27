@@ -7,3 +7,4 @@ Last Modified Date: Mon, 26 Dec 2011 18:01:11 +0530
 4) Update doc file with valid doc
 5) Cleanup purpose in servient.sh
 6) Record a failure to execute as "F" to (use sed 's/[^\ +\t+0-9]//g')
+7) Do shell script option parsing and create a help screen

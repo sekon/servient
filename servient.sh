@@ -7,7 +7,7 @@
 #Taken Over date:										#
 #Date of last commit:Mon, 26 Dec 2011 18:10:41 +0530						#
 #License: GPL V3 +										#
-#Internal Version Number: 0.4									#
+#Internal Version Number: 0.4a									#
 #################################################################################################
 
 ####################################### CONFIG DATA #############################################
@@ -22,15 +22,16 @@ VERBOSE_OUTPUT=0
 
 function get_user_id ()
 {
+	## TODO Clean this up .. really needs to be done more elegantly
 	if [ -f "$USER_INFO_FILE_NAME" ]
 	then
-		MY_UID=`cat "$USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'`
-		IS_UNIQ=`cat "$USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'|wc -l`
+		MY_UID=`cat "$DIR/$USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'`
+		IS_UNIQ=`cat "$DIR/USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'|wc -l`
 		if [ "$IS_UNIQ" -ne "1" ]
 		then
 			if (( $VERBOSE_OUTPUT ))
 			then
-				echo "$PWD/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
+				echo "$DIR/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
 			fi
 			exit 205
 		else
