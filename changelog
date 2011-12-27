@@ -1,7 +1,7 @@
-servient (0.4a) 
+servient (0.4a) testing; urgency=low
 
   * Initial release.
   * Code cleanup.
   * TODO:Add more stuff. Remove this line when releasing.
 
- -- Harish Badrinath Mon, 26 Dec 2011 18:10:41 +0530
+ -- Harish Badrinath <see@CREDITS.file>  Mon, 26 Dec 2011 18:10:41 +0530

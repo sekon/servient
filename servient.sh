@@ -44,6 +44,79 @@ function get_user_id ()
 
 
 IS_ROOT=`id | grep -w root  | wc -l`
+
+function show_help_screen ()
+{
+	MY_OPTIONAL_STRING=`echo $OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
+	echo "Usage for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
+}
+
+
+#Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
+# and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
+OPTION_STRING=":-:d:Df:hm:r:R:u:"
+
+## TODO check for multiple arguments and valid arguments
+while getopts "$OPTION_STRING" opt; do
+	case $opt in
+		-)
+			case "${OPTARG}" in
+				verbose)
+					#Called only when --verbose is called ..
+					val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+					echo "Parsing option: '--${OPTARG}', value: '${val}'" >&2;
+					echo "Naked Verbosity" >&2;
+					;;
+				verbose=*)
+					val=${OPTARG#*=}
+					opt=${OPTARG%=$val}
+					echo "Parsing option: '--${opt}', value: '${val}'" >&2
+					;;
+				help)
+					show_help_screen
+					;;
+				*)
+					if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+					echo "Unknown option --${OPTARG}" >&2
+					fi
+					;;
+				esac
+			;;
+		d)
+			echo "-d was triggered, Delay will be  $OPTARG" >&2
+			;;
+		D)
+			echo "-D was trigerred, you have enabled bash debugging" >&2
+			;;
+		f)
+			echo "-f was triggered, $OPTARG file in each directory will be queried for user info" >&2
+			;;
+		h)
+			show_help_screen
+			;;
+		m)
+			echo "-m was triggered, Parameter: $OPTARG is the meta directory" >&2
+			;;
+		r)
+			echo "-r was triggered, Parameter: $OPTARG is the reference directory" >&2
+			;;
+		R)
+			echo "-R was triggered, Report will be returned to  $OPTARG" >&2
+			;;
+		u)
+			echo "-f was triggered, $OPTARG file in each directory will be queried for user info" >&2
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1 ## TODO: Put proper exit codes
+			;;
+		:)
+			echo "Option -$OPTARG requires an argument." >&2
+			exit 1 ## TODO: Put proper exit codes
+			;;
+	esac
+done
+
 if [ $IS_ROOT -ne 0 ]
 then
 	echo "Cant run script as root !!"
@@ -105,16 +178,17 @@ do
 	DIR=`echo $DIR| sed 's/^\.\///'`;	
 	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "$META_DIR_NAME" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
 	then
-		MAGIC_STRING=""
+		MAGIC_STRING="" ## TODO: see TODO
 		SCORE=0
 		USER_ID=$(get_user_id)
+		## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
 		if ( [ ! -z "$USER_ID"  ] || ( [ -z "$USER_INFO_FILE_NAME" ] && [ -z "$USER_INFO_UID_STRING" ] ) )
 		then
 			FILES=`find "$DIR" -name "*" -type f`
 			for FILE in $FILES
 			do
 				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
-				FILE_PART=`echo $FILE_NAME | cut -d "." -f 1` ## TODO .. use awk here
+				FILE_PART=`echo $FILE_NAME | cut -d "." -f 1` ## TODO .. use awk here to exclude the last dot
 				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" ]
 				then
 					REF_OP=""
@@ -274,7 +348,7 @@ do
 				fi
 			done
 			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "$DIR#$MAGIC_STRING,$SCORE" | cat >> "$PARENT_DIR/$REPORT_FILE"
+			echo "$DIR#$MAGIC_STRING,$SCORE" | cat >> "$REPORT_FILE"
 		else
 			if (( $VERBOSE_OUTPUT ))
 			then
@@ -293,3 +367,4 @@ if [ -f op_our ]
 then
 	rm -f op_our
 fi
+ 

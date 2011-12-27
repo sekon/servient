@@ -31,13 +31,24 @@
 component to a "binary" is missing ??
 	Well the execution fails and the attempt will be recorded.
 
-7)AHHHH .. the lines look weird ??
+8)Is there something i must *not* absolutely do inadvertently 
+	Please read the documentation (TODO: Temp placeholder, never change the 
+	working directory of the script. Please use full path names, dont 
+	overwrite script variables)..
+
+9)Can i use language specific chop suey in any of the "meta" scripts
+	Sure .. as long as those features can be persistent across invocations.
+	To elaborate with an example, you cant expect a python namespace
+	populated in a pre-test script to be visible during the actual test
+	unless you go out of your way to make it so.
+
+10)AHHHH .. the lines look weird ??
 	Set text width to 79 and set text wrap on (which is on by default).
 	If you are using vim,
-	set tw=79
+	set textwidth=80
 	set wrap
 
-8) Anything else ??
+11) Anything else ??
 	Of course, all files are licensed under the terms of GPL3, unless
 	specified otherwise.
 	Project (indirectly) funded by the tax payers of the Republic of India
