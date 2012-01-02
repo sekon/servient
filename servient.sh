@@ -7,10 +7,11 @@
 #Taken Over date:										#
 #Date of last commit:Mon, 26 Dec 2011 18:10:41 +0530						#
 #License: GPL V3 +										#
-#Internal Version Number: 0.4a									#
+#Internal Version Number: See $SERVIENT_VERSION_NUMBER 									#
 #################################################################################################
 
 ####################################### CONFIG DATA #############################################
+SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
 SCRIPT_DELAY=2
 REFERENCE_SCRIPTS_DIR_NAME="REF"
 META_DIR_NAME="META"
@@ -18,6 +19,7 @@ USER_INFO_FILE_NAME="user_info.txt"
 USER_INFO_UID_STRING="User ID"
 REPORT_FILE="report.txt"
 VERBOSE_OUTPUT=0
+SERVIENT_VERSION_NUMBER="0.4a"
 ####################################### CONFIG DATA ENDS ########################################
 
 ##TODO: Get a list of all variables in a bash script.
@@ -54,13 +56,14 @@ IS_ROOT=`id | grep -w root  | wc -l`
 function show_help_screen ()
 {
 	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
+	echo "$0 - $SERVIENT_VERSION_NUMBER"
 	echo "Available options for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
 }
 
 
 #Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
 # and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:"
+SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
 
 SERVIENT_verbose_is_set=0
 SERVIENT_delay_is_set=0
@@ -71,7 +74,6 @@ SERVIENT_meta_dir_is_set=0
 SERVIENT_ref_dir_is_set=0
 SERVIENT_result_file_is_set=0
 SERVIENT_sol_dir_is_set=0
-SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
 ## TODO check for multiple arguments and valid arguments
 while getopts "$SERVIENT_OPTION_STRING" opt; do
 	case $opt in

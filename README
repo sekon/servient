@@ -36,11 +36,14 @@ component to a "binary" is missing ??
 	working directory of the script. Please use full path names, dont 
 	overwrite script variables)..
 
-9)Can i use language specific chop suey in any of the "meta" scripts
-	Sure .. as long as those features can be persistent across invocations.
-	To elaborate with an example, you cant expect a python namespace
+9)How can i use language specific chop suey 
+	It would be very trivial to use $FEATURE .. as long as those features
+	can be persistent across invocations, if not you would have to write
+	a pluggable script and put it in one of the "META" scripts.
+	To elaborate with an example,
+	If you dont write a pluggable scirpt you cant expect a python namespace
 	populated in a pre-test script to be visible during the actual test
-	unless you go out of your way to make it so.
+	unless you go out of your way to make it so. 
 
 10)AHHHH .. the lines look weird ??
 	Set text width to 79 and set text wrap on (which is on by default).
