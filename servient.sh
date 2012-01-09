@@ -12,6 +12,7 @@
 
 ####################################### CONFIG DATA #############################################
 SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
+SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
 SCRIPT_DELAY=2
 REFERENCE_SCRIPTS_DIR_NAME="REF"
 META_DIR_NAME="META"
@@ -50,6 +51,23 @@ function get_user_id ()
 	fi
 } 
 
+function is_path_absolute()
+{
+	local absolute
+	if [ ! -z "$1" ]
+	then
+		#Function returns 1 if path is absolute else 0
+		case "$1" in
+			/*) absolute=1 ;;
+			*) absolute=0 ;;
+		esac
+	else
+		absolute=0
+	fi
+	return $absolute
+
+}
+
 
 IS_ROOT=`id | grep -w root  | wc -l`
 
@@ -74,6 +92,16 @@ SERVIENT_meta_dir_is_set=0
 SERVIENT_ref_dir_is_set=0
 SERVIENT_result_file_is_set=0
 SERVIENT_sol_dir_is_set=0
+SERVIENT_DEFAULT_VERBOSITY=2
+SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
+declare SERVIENT_VAL_DELAY
+declare SERVIENT_VAL_DEBUG
+declare SERVIENT_VAL_UINFO_FILE
+declare SERVIENT_VAL_META_DIR
+declare SERVIENT_VAL_REF_DIR
+declare SERVIENT_VAL_RES_FILE
+declare SERVIENT_VAL_SOL_DIR
+declare SERVIENT_VAL_UINFO_STRING
 ## TODO check for multiple arguments and valid arguments
 while getopts "$SERVIENT_OPTION_STRING" opt; do
 	case $opt in
@@ -83,10 +111,8 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 					if (( ! $SERVIENT_verbose_is_set ))
 					then
 						#Called only when --verbose is called ..
-						val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
-						echo "Parsing option: '--${OPTARG}', value: '${val}'" >&2;
-						echo "Naked Verbosity" >&2;
 						SERVIENT_verbose_is_set=1
+						SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
 					else
 						echo "More than one instance of ${OPTARG} given during invocation" >&2
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -99,6 +125,13 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 						opt=${OPTARG%=$val}
 						echo "Parsing option: '--${opt}', value: '${val}'" >&2
 						SERVIENT_verbose_is_set=1
+						if ( [ $val -gr 1 ] && [ $val -le 5 ] )
+						then
+							SERVIENT_VAL_VERBOSITY=$val
+						else
+							echo "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
+							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi
 					else
 						echo "More than one instance of ${OPTARG} given during invocation" >&2
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -124,8 +157,15 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		d)
 			if (( ! $SERVIENT_delay_is_set ))
 			then
-				echo "-d was triggered, Delay will be  $OPTARG" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_delay_is_set=1
+				if [ $SERVIENT_VAL_DELAY -gr 0 ]
+				then
+					SERVIENT_VAL_DELAY=$OPTARG
+				else
+					echo "delay should be a postive number, which is greater than zero"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -136,6 +176,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 			then
 				echo "-D was trigerred, you have enabled bash debugging" >&2
 				SERVIENT_debug_is_set=1
+				$SERVIENT_VAL_DEBUG=1
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -144,8 +185,27 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		f)
 			if (( ! $SERVIENT_uinfo_file_is_set ))
 			then
-				echo "-f was triggered, $OPTARG file in each directory will be queried for user info" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_uinfo_file_is_set=1
+				if [ ! -z "$OPTARG" ]
+				then
+					No_Slashes=`echo "$OPTARG" | awk -F "/" '{print NF;}'`
+					if [ "$No_Slashes" -ne 1 ]
+					then
+						No_Slashes=0
+					fi
+					if [ $No_Slashes -eq 1 ]
+					then
+						$SERVIENT_VAL_UINFO_FILE=$OPTARG ## This should only be file names 
+					else
+						echo "[ $opt ] was given [ $OPTARG] as argument"
+						echo "It must not contains \"/\", as i refers to a file in each directory of interest"
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					fi
+				else
+					echo "delay should be a postive number, which is greater than zero"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -163,8 +223,10 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		m)
 			if (( ! $SERVIENT_meta_dir_is_set ))
 			then
-				echo "-m was triggered, Parameter: $OPTARG is the meta directory" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_meta_dir_is_set=1
+				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+				SERVIENT_VAL_META_DIR="$OPTARG"	
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -173,8 +235,10 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		r)
 			if (( ! $SERVIENT_ref_dir_is_set ))
 			then
-				echo "-r was triggered, Parameter: $OPTARG is the reference directory/file" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_ref_dir_is_set=1
+				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+				SERVIENT_VAL_REF_DIR="$OPTARG"	
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -183,8 +247,18 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		R)
 			if (( ! $SERVIENT_result_file_is_set ))
 			then
-				echo "-R was triggered, Report will be returned to  $OPTARG" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_result_file_is_set=1
+				is_path_absolute "$OPTARG" || ( [ -e "$OPTARG" ] && [ ! -f "$OPTARG" ] ) && echo "[ $OPTARG ], an arg for $opt should be a file and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+				ERROR_STRING=`touch "$OPTARG" 2>&1`
+				TEMP=$?
+				if [ $TEMP -ne 0 ]
+				then
+					echo " Problem creating/acessing [ $OPTARG ]"
+					echo "$ERROR_STRING"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				SERVIENT_VAL_RES_FILE=$OPTARG
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -193,8 +267,10 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		s)
 			if (( ! $SERVIENT_sol_dir_is_set ))
 			then
-				echo "-s was triggered, Parameter: $OPTARG is the solution directory/file" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_sol_dir_is_set=1
+				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+				SERVIENT_VAL_SOL_DIR="$OPTARG"	
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -203,8 +279,23 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 		u)
 			if (( ! $SERVIENT_uinfo_string_is_set ))
 			then
-				echo "-u was triggered, $OPTARG string will be executed on the contents of file given in -f argument" >&2
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 				SERVIENT_uinfo_string_is_set=1
+				if [ -z "$OPTARG" ]
+				then
+					echo "Userinfo extraction string [ $OPTARG ], cant be empty"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+				ERROR_STRING=`bash -n -c "$OPTARG" 2>&1`
+				SERVIENT_VAL_UINFO_STRING="$OPTARG"
+				TEMP=$?
+				if [ $TEMP -ne 0 ]
+				then
+					echo "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
+					echo "$ERROR_STRING"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
 			else
 				echo "More than one instance of $opt given during invocation" >&2
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -221,25 +312,26 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 	esac
 done
 
-if [ $IS_ROOT -ne 0 ]
-then
-	echo "Cant run script as root !!"
-	exit 25
-fi		
+#if [ $IS_ROOT -eq 0 ] ## TODO Think this over
+#then
+#	echo "Initially this script needs root previlages."
+#	echo "It will later drop previlages to specifed user/nobody"
+#	exit $SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT
+#fi		
 if [ -z "$REFERENCE_SCRIPTS_DIR_NAME" ]
 then
 	echo "[CONFIG-ERROR] Variable REFERENCE_SCRIPTS_DIR_NAME cant be null"
-	exit 200
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG 
 fi
 if [ -z "$META_DIR_NAME" ]
 then
 	echo "[CONFIG-ERROR] Variable META_DIR_NAME cant be null"
-	exit 200
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 if [ -z "$REPORT_FILE" ]
 then
 	echo "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
-	exit 200
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 if [ -z "$VERBOSE_OUTPUT" ]
 then
@@ -261,7 +353,7 @@ then
 	then
 		echo "[CONFIG-ERROR] Variable USER_INFO_UID_STRING is not null"
 		echo "[CONFIG-ERROR] While USER_INFO_FILE_NAME is null !!"
-		exit 200
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
 if [ -z "$USER_INFO_UID_STRING" ]
@@ -271,7 +363,7 @@ then
 	then
 		echo "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME is not null"
 		echo "[CONFIG-ERROR] While USER_INFO_UID_STRING is null !!"
-		exit 200
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
 
