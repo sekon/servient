@@ -1,5 +1,5 @@
 Last Modified By: Harish Badrinath
-Last Modified Date: Wed, 28 Dec 2011 13:47:53 +0530
+Last Modified Date: Sun, 15 Jan 2012 14:51:37 +0530 
 0) Make function get_user_id a little less sucky.
 1) Create and support a $META directory (by default it is directly inside
 Reference directory).
@@ -17,3 +17,5 @@ and an optional verbosirty level. If nothing is given the default log level
 is used which is 2. Verbsority level of upto file can be given, greater values
 are forced to be 5.
 11) Prefix everything with SERVIENT_, to prevent accidental overwriting by added code. 
+12) Write functions log,print,print_stderr and helper functions for retrival 
+of stdargs/its default values.

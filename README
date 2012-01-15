@@ -20,7 +20,8 @@
 5)What about security ??
 	There are *NO* security features in place, you have to take necessary
 	precautions (like running in a chroot with fine grained access control
-	/running in a throwable VM)
+	/running in a throwable VM). Please remember, you are running arbitarty
+	code submitted by untrusted third parties.
 
 6)So a validated script is guaranteed to be correct ??
 	No, it is entirely dependent on the instructor provided reference

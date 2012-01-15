@@ -286,7 +286,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 					echo "Userinfo extraction string [ $OPTARG ], cant be empty"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
 				ERROR_STRING=`bash -n -c "$OPTARG" 2>&1`
 				SERVIENT_VAL_UINFO_STRING="$OPTARG"
 				TEMP=$?
