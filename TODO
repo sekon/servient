@@ -19,3 +19,6 @@ are forced to be 5.
 11) Prefix everything with SERVIENT_, to prevent accidental overwriting by added code. 
 12) Write functions log,print,print_stderr and helper functions for retrival 
 of stdargs/its default values.
+13) create functions get_userinfo_file and is_userinfo_file. Also create function
+to defer userinfo file selection to runtime. (all has to be shell scripts only,related to 0).
+14) Bring Changes in 03~scilab~1 into this repo

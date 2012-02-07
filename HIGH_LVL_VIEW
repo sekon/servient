@@ -1,4 +1,5 @@
 servient:- A high level overview
+Please note:scriptEntry can be either a solution file or directory. For the default evaluator scriptEntry for both reference and prospective solution has to be file with executbale permission enabled)
 Type of args to process:
 a)only one
 a1) Single file .. try to execute it .. might be for a language specific test suite. Output is echoed as such on the screen.
@@ -22,23 +23,31 @@ by default the result is printed on screen. unless result file argument is speci
 start as root, to convert everything to absolute paths and then drop to another user. (by default it is nobody, but you could do specify an argument.
 
 -->Inside $REF/<QID>.args/ directory
-(a) Test Script generator, used to generate any file to be used by your optional eval script. If you are using the default evaluator, then this script has to create $REF/<QID>.args/<QID>.args file.
-Note whenever the default evaluator looks into $REF/<QID>.args/ and does not find $REF/<QID>.args/<QID>.args, the Test script generator is run once to try and see if $REF/<QID>.args/<QID>.args is being created. This is done so that you can easily create test cases on the fly/change test according to SID
+There are two mutually exclusive cases
+(a) A Test template and a subsitution file
+--OR--
+(b) Test Script generator, used to generate any file to be used by your optional eval script. If you are using the default evaluator, then this script has to create $REF/<QID>.args/<QID>.args file.
+Note 
+(1)whenever the default evaluator looks into $REF/<QID>.args/ and does not find $REF/<QID>.args/<QID>.args, the Test script generator is run once to try and see if $REF/<QID>.args/<QID>.args is being created. This is done so that you can easily create test cases on the fly/change test according to SID
+(2) The highest priority is to  Test template and a subsitution file, if it exists it is used.
 
 -->The structure of META directory (directory contains scripts to customize how tests are conducted).
 In $META Top level directory (for all questions),
-(a) Pretest file Run before eval script is run for each prospective solution, reference solution tuple. (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/script, /full/path/to/reference/script. The fourth argument can be null). Return value 1 to record successful pre test execution. Return value is not critical, used mainly to force log entries.
+(a) Pretest file Run before eval script is run for each prospective solution, reference solution tuple. (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fourth argument can be null). Return value 1 to record successful pre test execution. Return value is not critical, used mainly to force log entries.
 
-(b) eval script, to check whether the student script passed tests. The default behavior is to compare outputs of the reference script and student script (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/script, /full/path/to/reference/script. The fourth argument can be null). Return -1 to force default behavior 1 to indicate success 0 to indicate failure and F to indicate failure (dependency error, wrong permission, faults in the operating environment,etc). 
+(b) eval script, to check whether the student script passed tests. The default behavior is to compare outputs of the reference script and student script (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fourth argument can be null). Return -1 to force default behavior 1 to indicate success 0 to indicate failure and F to indicate failure (dependency error, wrong permission, faults in the operating environment,etc). 
 
-(c) Posttest file is used to do post test cleanup for each prospective solution, reference solution tuple. (5 Arguments to the script:QID, UID-Of-prospective-solution-Dir, 0 if last test was successful,else -1,/full/path/to/prospective-solution/script, /full/path/to/reference/script. The fifth argument can be null)
+(c) Posttest file is used to do post test cleanup for each prospective solution, reference solution tuple. (5 Arguments to the script:QID, UID-Of-prospective-solution-Dir, 0 if last test was successful,else -1,/full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fifth argument can be null)
 Return value 1 to record sucessful post test execution. Return value is not critical, used mainly to force log entries.
 
 in $META/<QID>.extension directory (for a specific question),
 (a) a staging directory that can contain:
  (a1) A reference solution build script: is a script that can be used to build reference solution (if the reference solution is a directory). Return -1 to indicate error. Error now marked as F in result. One argument, the absolute path to the reference solution directory(not necessarily guaranteed to be a directory).
  (a2) A student solution build script: is a script that can be used to build student solution (if the student solution is a directory). Return -1 to indicate error. Error now marked as F in result. One argument, the absolute path to the student solution (not necessarily guaranteed to be a directory).
- (a3)Reference-Match script: Basically if the Reference script is a directory then this file is executed, to get the string bash should use as is, to execute the reference script. Return -1 for error. Very rarely needed, if you are writing your own eval script. Only one argument, the reference solution directory that is trying to be executed. You could return an empty sting here, with the default eval scheme to indicate that the testing scripts take care of validation.Please return full paths (relative paths are discarded and entry marked as F). If this file does not exist the the default eval scheme assumes that the testing scripts take care of validation.
+ (a3)Reference-Match script: 
+  Two (known) reasons to use this (5 Arguments to the script:QID, UID-Of-prospective-solution-Dir, 0 if last test was successful,else -1,/full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry) 
+ --> The reference script is having a different file extention than the prospective solution file. (For example: The reference solution is really a test script for language foo).
+ --> if the Reference script is a directory then this file is executed, to get the string bash should use as is, to execute the reference script. Return -1 for error. Very rarely needed, if you are writing your own eval script. Please return full paths (relative paths are discarded and entry marked as F). If this file does not exist the the default eval scheme assumes that the testing scripts take care of validation.
  (a4) Student-Solution-Match script: Basically if the student solution is a directory then this file is executed to get the string bash should use as is, to execute the student script. Return -1 for error. Very rarely needed if you are writing you own eval script. Only one argument  the student solution directory that is trying to be executed. Returning an empty string here, with the default eval scheme indicates F. Please return full paths (relative paths are discarded and entry marked as F). If this script does not exist and student script solution is a directory, then student scipt path is assumed to be to null.
 After this if $REF/<QID>.args/ is a directory, then Test Script generator is invoked.
 (b) Specialized pretest,eval and posttest files for each question in $META/<QID>.extension directory.

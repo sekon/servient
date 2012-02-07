@@ -7,7 +7,7 @@
 #Taken Over date:										#
 #Date of last commit:Mon, 26 Dec 2011 18:10:41 +0530						#
 #License: GPL V3 +										#
-#Internal Version Number: See $SERVIENT_VERSION_NUMBER 									#
+#Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
 
 ####################################### CONFIG DATA #############################################
@@ -42,7 +42,7 @@ function get_user_id ()
 			then
 				echo "$DIR/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
 			fi
-			exit 205
+			exit 205 ## TODO use exit, with more consistency with the rest of document.
 		else
 			echo "$MY_UID"	
 		fi
@@ -420,7 +420,7 @@ do
 								then
 									echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 								fi
-								exit 255
+								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
 							if [ -z $OUR_PID ]
 							then
@@ -428,7 +428,7 @@ do
 								then
 									echo "Problem running script $DIR/$FILE_NAME"
 								fi
-								exit 255
+								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
 							IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
 							IS_OUR_RUNNING=`ps aux | grep -w "$OUR_PID" | grep -v grep | wc -l`
@@ -497,7 +497,7 @@ do
 							then
 								echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 							fi
-							exit 255
+							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
 						if [ -z $OUR_PID ]
 						then
@@ -505,7 +505,7 @@ do
 							then
 								echo " Problem running script $DIR/$FILE_NAME"
 							fi
-							exit 255
+							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
 						IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
 						IS_OUR_RUNNING=`ps aux | grep -w "$OUR_PID" | grep -v grep | wc -l`
