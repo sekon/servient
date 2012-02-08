@@ -5,14 +5,30 @@
   \maketitle
   \tableofcontents{}
   \chapter{Introduction}
-    Hello, firstly thank you for your interest in servient. This Guide is intended to be mainly for people who deploy and use servient.
-    \section{Servient's Intended Audience} 
-    Servient Aims to primarily service the following use case: Batching the validation of programs, which are prospective solutions to a problem statement.
-    To put it in very simple words, you can automate the correction of say, student submitted solution to a lab program.
+    \section{Prologue}
+      Hello, firstly thank you for your interest in servient. \\
+      \textbf{Note:}\\
+      \begin{itemize}
+        \item This Guide is intended to be mainly for people who deploy and use servient.\\
+        \item Servient Aims to primarily service the following use case: Batching the validation of programs, which are prospective solutions to a problem statement. To put it in very simple words, you can automate the correction of say, student submitted solution to a lab program.
+      \end{itemize}
+    \section{Some Meta Information}
+        Serivient is black box testing framework that is small, simple, flexible and light weight. Focussed on testing in a class room like environment.
+        It aims to be written in standard compliant shell, so that it can be run on various shells in a consistent manner.
+        It is written as part of the FOSSEE$^{\textrm{\cite{fossee}}}$ project. It was deployed in aiding the efforts of programs like, the thousand teacher program.
+        The source coude of this project is on github$^{\textrm{\cite{servient-repo}}}$.
+
   \chapter{Changelog}
     \begin{tabular}{ | c | c | c | c | }
       \hline
       Date & Version & Change Message & Author\\ \hline
       Tue, 07 Feb 2012 23:00:31 +0530 & 0.1 & Initial Commit & Harish Badrinath\\ \hline
     \end{tabular}
+  \begin{thebibliography}{99}
+  \bibitem{fossee}
+    FOSSEE Project, Based at Indian Institute of Bombay.\\
+    Please see http://fossee.in/
+   \bibitem{servient-repo}
+    https://github.com/sekon/servient
+  \end{thebibliography}
 \end{document}

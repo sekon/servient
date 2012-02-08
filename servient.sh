@@ -384,8 +384,8 @@ do
 			FILES=`find "$DIR" -name "*" -type f`
 			for FILE in $FILES
 			do
-				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
-				FILE_PART=`echo $FILE_NAME | cut -d "." -f 1` ## TODO .. use awk here to exclude the last dot
+				FILE_NAME=`echo "$FILE" |awk -F "/" '{print $NF;}'`
+				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
 				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" ]
 				then
 					REF_OP=""
