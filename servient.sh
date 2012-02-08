@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #################################################################################################
 #Purpose: <To be done>										#
 #Primary Author: Harish Badrinath < harish [at] fossee.in>					#
@@ -29,7 +29,7 @@ SERVIENT_VERSION_NUMBER="0.4a"
 # even if $PLUGIN_FILE redefines/rewrites variables .. it wont be seen here even when the script is being sourced.
 
 
-function get_user_id ()
+get_user_id () 
 {
 	## TODO Clean this up .. really needs to be done more elegantly
 	if [ -f "$USER_INFO_FILE_NAME" ]
@@ -51,7 +51,7 @@ function get_user_id ()
 	fi
 } 
 
-function is_path_absolute()
+is_path_absolute()
 {
 	local absolute
 	if [ ! -z "$1" ]
@@ -71,7 +71,7 @@ function is_path_absolute()
 
 IS_ROOT=`id | grep -w root  | wc -l`
 
-function show_help_screen ()
+show_help_screen ()
 {
 	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
 	echo "$0 - $SERVIENT_VERSION_NUMBER"
@@ -94,14 +94,14 @@ SERVIENT_result_file_is_set=0
 SERVIENT_sol_dir_is_set=0
 SERVIENT_DEFAULT_VERBOSITY=2
 SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
-declare SERVIENT_VAL_DELAY
-declare SERVIENT_VAL_DEBUG
-declare SERVIENT_VAL_UINFO_FILE
-declare SERVIENT_VAL_META_DIR
-declare SERVIENT_VAL_REF_DIR
-declare SERVIENT_VAL_RES_FILE
-declare SERVIENT_VAL_SOL_DIR
-declare SERVIENT_VAL_UINFO_STRING
+SERVIENT_VAL_DELAY=""
+SERVIENT_VAL_DEBUG=""
+SERVIENT_VAL_UINFO_FILE=""
+SERVIENT_VAL_META_DIR=""
+SERVIENT_VAL_REF_DIR=""
+SERVIENT_VAL_RES_FILE=""
+SERVIENT_VAL_SOL_DIR=""
+SERVIENT_VAL_UINFO_STRING=""
 ## TODO check for multiple arguments and valid arguments
 while getopts "$SERVIENT_OPTION_STRING" opt; do
 	case $opt in
@@ -430,8 +430,8 @@ do
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
-							IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
-							IS_OUR_RUNNING=`ps aux | grep -w "$OUR_PID" | grep -v grep | wc -l`
+							IS_REF_RUNNING=`ps aux | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+							IS_OUR_RUNNING=`ps aux | awk -v PROCESS=$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l` 
 							if (( $IS_REF_RUNNING ))
 							then
 								kill -s SIGKILL $REF_PID
