@@ -22,3 +22,4 @@ of stdargs/its default values.
 13) create functions get_userinfo_file and is_userinfo_file. Also create function
 to defer userinfo file selection to runtime. (all has to be shell scripts only,related to 0).
 14) Bring Changes in 03~scilab~1 into this repo
+15) Remove all occurances of bash (this includes in syntax checking code for plugins,etc).

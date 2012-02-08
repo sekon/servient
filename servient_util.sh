@@ -18,3 +18,24 @@ call_valid_ps_with_args()
 		SERVIENT_PS_COMMAND_ARGS="ps"
 	fi
 }
+
+########################## Function: print_screen #######################################
+# Purpose: Prints to the stdout, after talking into account verbosity,log level,etc.	#
+# Arguments: TBD									#
+# Note: None										#
+#########################################################################################
+print_screen()
+{
+	echo "$*"
+}
+
+########################## Function: print_err ##########################################
+# Purpose: Prints to the stderr, mainly added because of issues with appending >2 at 	#
+# end. Please Note that there are no logging levels, verbosity for stderr stream.	#
+# Arguments: TBD									#
+# Note: None										#
+#########################################################################################
+print_err()
+{
+	echo "$*" >&2
+}

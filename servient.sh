@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 #################################################################################################
 #Purpose: <To be done>										#
 #Primary Author: Harish Badrinath < harish [at] fossee.in>					#
@@ -9,6 +9,9 @@
 #License: GPL V3 +										#
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
+
+SERVIENT_INSTALL_DIR=$PWD
+source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 
 ####################################### CONFIG DATA #############################################
 SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
@@ -40,7 +43,7 @@ get_user_id ()
 		then
 			if (( $VERBOSE_OUTPUT ))
 			then
-				echo "$DIR/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
+				print_screen "$DIR/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
 			fi
 			exit 205 ## TODO use exit, with more consistency with the rest of document.
 		else
@@ -74,8 +77,8 @@ IS_ROOT=`id | grep -w root  | wc -l`
 show_help_screen ()
 {
 	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
-	echo "$0 - $SERVIENT_VERSION_NUMBER"
-	echo "Available options for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
+	print_screen "$0 - $SERVIENT_VERSION_NUMBER"
+	print_screen "Available options for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
 }
 
 
@@ -114,7 +117,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 						SERVIENT_verbose_is_set=1
 						SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
 					else
-						echo "More than one instance of ${OPTARG} given during invocation" >&2
+						print_err "More than one instance of ${OPTARG} given during invocation"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 					;;
@@ -129,11 +132,11 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 						then
 							SERVIENT_VAL_VERBOSITY=$val
 						else
-							echo "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
+							print_err "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
 							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 						fi
 					else
-						echo "More than one instance of ${OPTARG} given during invocation" >&2
+						print_err "More than one instance of ${OPTARG} given during invocation"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 					;;
@@ -142,13 +145,13 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 					then
 						show_help_screen
 					else
-						echo "Option ${OPTARG} needs to be the only argument" >&2
+						print_err "Option ${OPTARG} needs to be the only argument" 
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 					;;
 				*)
 					if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
-						echo "Unknown option --${OPTARG}" >&2
+						print_err "Unknown option --${OPTARG}"
 					fi
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					;;
@@ -163,22 +166,22 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				then
 					SERVIENT_VAL_DELAY=$OPTARG
 				else
-					echo "delay should be a postive number, which is greater than zero"
+					print_err "delay should be a postive number, which is greater than zero"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
 		D)
 			if (( ! $SERVIENT_debug_is_set ))
 			then
-				echo "-D was trigerred, you have enabled bash debugging" >&2
+				print_err "-D was trigerred, you have enabled bash debugging"
 				SERVIENT_debug_is_set=1
 				$SERVIENT_VAL_DEBUG=1
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -198,16 +201,16 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 					then
 						$SERVIENT_VAL_UINFO_FILE=$OPTARG ## This should only be file names 
 					else
-						echo "[ $opt ] was given [ $OPTARG] as argument"
-						echo "It must not contains \"/\", as i refers to a file in each directory of interest"
+						print_err "[ $opt ] was given [ $OPTARG] as argument"
+						print_err "It must not contains \"/\", as i refers to a file in each directory of interest"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 				else
-					echo "delay should be a postive number, which is greater than zero"
+					print_err "delay should be a postive number, which is greater than zero"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -216,7 +219,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 			then
 				show_help_screen
 			else
-				echo "Option ${OPTARG} needs to be the only argument" >&2
+				print_err "Option ${OPTARG} needs to be the only argument"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -228,7 +231,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 				SERVIENT_VAL_META_DIR="$OPTARG"	
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -240,7 +243,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 				SERVIENT_VAL_REF_DIR="$OPTARG"	
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -254,13 +257,13 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				TEMP=$?
 				if [ $TEMP -ne 0 ]
 				then
-					echo " Problem creating/acessing [ $OPTARG ]"
-					echo "$ERROR_STRING"
+					print_err " Problem creating/acessing [ $OPTARG ]"
+					print_err "$ERROR_STRING"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				SERVIENT_VAL_RES_FILE=$OPTARG
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -272,7 +275,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 				SERVIENT_VAL_SOL_DIR="$OPTARG"	
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
@@ -283,7 +286,7 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				SERVIENT_uinfo_string_is_set=1
 				if [ -z "$OPTARG" ]
 				then
-					echo "Userinfo extraction string [ $OPTARG ], cant be empty"
+					print_err "Userinfo extraction string [ $OPTARG ], cant be empty"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
@@ -292,21 +295,21 @@ while getopts "$SERVIENT_OPTION_STRING" opt; do
 				TEMP=$?
 				if [ $TEMP -ne 0 ]
 				then
-					echo "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
+					print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
 					echo "$ERROR_STRING"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 			else
-				echo "More than one instance of $opt given during invocation" >&2
+				print_err "More than one instance of $opt given during invocation"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			fi
 			;;
 		\?)
-			echo "Invalid option: -$OPTARG" >&2
+			print_err "Invalid option: -$OPTARG"
 			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			;;
 		:)
-			echo "Option -$OPTARG requires an argument." >&2
+			print_err "Option -$OPTARG requires an argument."
 			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 			;;
 	esac
@@ -320,52 +323,55 @@ done
 #fi		
 if [ -z "$REFERENCE_SCRIPTS_DIR_NAME" ]
 then
-	echo "[CONFIG-ERROR] Variable REFERENCE_SCRIPTS_DIR_NAME cant be null"
+	print_err "[CONFIG-ERROR] Variable REFERENCE_SCRIPTS_DIR_NAME cant be null"
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG 
 fi
 if [ -z "$META_DIR_NAME" ]
 then
-	echo "[CONFIG-ERROR] Variable META_DIR_NAME cant be null"
+	print_err "[CONFIG-ERROR] Variable META_DIR_NAME cant be null"
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 if [ -z "$REPORT_FILE" ]
 then
-	echo "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
+	print_err "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 if [ -z "$VERBOSE_OUTPUT" ]
 then
-	echo "[CONFIG-WARN] Variable VERBOSE_OUTPUT is null"
-	echo "Defaulting to zero"
+	print_err "[CONFIG-WARN] Variable VERBOSE_OUTPUT is null"
+	print_err "Defaulting to zero"
 	VERBOSE_OUTPUT=0
 fi
 if [ -z "$SCRIPT_DELAY" ]
 then
-	echo "[CONFIG-WARN] Variable SCRIPT_DELAY is null"
-	echo "Defaulting to delay of 2 seconds"
+	print_err "[CONFIG-WARN] Variable SCRIPT_DELAY is null"
+	print_err "Defaulting to delay of 2 seconds"
 	SCRIPT_DELAY=2
 fi
 if [ -z "$USER_INFO_FILE_NAME" ]
 then
-	echo "[CONFIG-WARN] Variable USER_INFO_FILE_NAME is null"
-	echo "[CONFIG-WARN] All Directories under $PWD will be checked !!"
+	print_err "[CONFIG-WARN] Variable USER_INFO_FILE_NAME is null"
+	print_err "[CONFIG-WARN] All Directories under $PWD will be checked !!"
 	if [ ! -z "$USER_INFO_UID_STRING" ]
 	then
-		echo "[CONFIG-ERROR] Variable USER_INFO_UID_STRING is not null"
-		echo "[CONFIG-ERROR] While USER_INFO_FILE_NAME is null !!"
+		print_err "[CONFIG-ERROR] Variable USER_INFO_UID_STRING is not null"
+		print_err "[CONFIG-ERROR] While USER_INFO_FILE_NAME is null !!"
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
 if [ -z "$USER_INFO_UID_STRING" ]
 then
-	echo "[CONFIG-WARN] Variable USER_INFO_UID_STRING is null"
+	print_err "[CONFIG-WARN] Variable USER_INFO_UID_STRING is null"
 	if [ ! -z "$USER_INFO_FILE_NAME" ]
 	then
-		echo "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME is not null"
-		echo "[CONFIG-ERROR] While USER_INFO_UID_STRING is null !!"
+		print_err "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME is not null"
+		print_err "[CONFIG-ERROR] While USER_INFO_UID_STRING is null !!"
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
+
+
+call_valid_ps_with_args
 
 DIR_LIST=`find . -maxdepth 1 -name "*" -type d`
 rm -f "$REPORT_FILE"
@@ -418,7 +424,7 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
+									print_screen "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
@@ -426,12 +432,12 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									echo "Problem running script $DIR/$FILE_NAME"
+									print_screen "Problem running script $DIR/$FILE_NAME"
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
-							IS_REF_RUNNING=`ps aux | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-							IS_OUR_RUNNING=`ps aux | awk -v PROCESS=$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l` 
+							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l` 
 							if (( $IS_REF_RUNNING ))
 							then
 								kill -s SIGKILL $REF_PID
@@ -454,8 +460,8 @@ do
 								else
 									if (( $VERBOSE_OUTPUT ))
 									then
-										echo "$USER_ID:$FILE_NAME-Wrong"
-										echo "broke for input $line"
+										print_screen "$USER_ID:$FILE_NAME-Wrong"
+										print_screen "broke for input $line"
 									fi
 									MAGIC_STRING="$MAGIC_STRING 0"
 									VALID_ANSWER=0
@@ -467,7 +473,7 @@ do
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								echo "$USER_ID:$FILE_NAME-Correct"
+								print_screen "$USER_ID:$FILE_NAME-Correct"
 							fi
 							MAGIC_STRING="$MAGIC_STRING 1"
 							SCORE=$(( $SCORE + 1 ))
@@ -495,7 +501,7 @@ do
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
+								print_screen "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
 							fi
 							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
@@ -503,12 +509,12 @@ do
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								echo " Problem running script $DIR/$FILE_NAME"
+								print_screen " Problem running script $DIR/$FILE_NAME"
 							fi
 							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
-						IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
-						IS_OUR_RUNNING=`ps aux | grep -w "$OUR_PID" | grep -v grep | wc -l`
+						IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | grep -w "$REF_PID" | grep -v grep | wc -l`
+						IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | grep -w "$OUR_PID" | grep -v grep | wc -l`
 						if (( $IS_REF_RUNNING ))
 						then
 							kill -s SIGKILL $REF_PID
@@ -529,14 +535,14 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									echo "$USER_ID:$FILE_NAME-Correct"
+									print_screen "$USER_ID:$FILE_NAME-Correct"
 								fi
 								MAGIC_STRING="$MAGIC_STRING 1"
 								SCORE=$(( $SCORE + 1 ))
 							else
 								if (( $VERBOSE_OUTPUT ))
 								then
-								 	echo "$USER_ID:$FILE_NAME-Wrong"
+								 	print_screen "$USER_ID:$FILE_NAME-Wrong"
 								fi
 								MAGIC_STRING="$MAGIC_STRING 0"
 							fi
@@ -545,12 +551,12 @@ do
 				fi
 			done
 			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "$DIR#$MAGIC_STRING,$SCORE" | cat >> "$REPORT_FILE"
+			echo "$DIR#$MAGIC_STRING,$SCORE" >> "$REPORT_FILE"
 		else
 			if (( $VERBOSE_OUTPUT ))
 			then
-				echo "Cant find valid user information"
-				echo "Skipping $DIR"
+				print_screen "Cant find valid user information"
+				print_screen "Skipping $DIR"
 			fi
 			cd $PARENT_DIR
 		fi
