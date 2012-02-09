@@ -93,3 +93,5 @@ grep
 wc
 ps
 awk
+sed
+expr

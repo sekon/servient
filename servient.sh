@@ -10,7 +10,7 @@
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
 
-SERVIENT_INSTALL_DIR=$PWD
+SERVIENT_INSTALL_DIR=$PWD ## Make the install script change this to install location.
 source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 
 ####################################### CONFIG DATA #############################################
@@ -24,6 +24,28 @@ USER_INFO_UID_STRING="User ID"
 REPORT_FILE="report.txt"
 VERBOSE_OUTPUT=0
 SERVIENT_VERSION_NUMBER="0.4a"
+SERVIENT_NON_POSITIONAL_ARGS=""
+SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
+SERVIENT_verbose_is_set=0
+SERVIENT_delay_is_set=0
+SERVIENT_debug_is_set=0
+SERVIENT_uinfo_file_is_set=0
+SERVIENT_uinfo_string_is_set=0
+SERVIENT_meta_dir_is_set=0
+SERVIENT_ref_dir_is_set=0
+SERVIENT_result_file_is_set=0
+SERVIENT_sol_dir_is_set=0
+SERVIENT_DEFAULT_VERBOSITY=2
+SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
+SERVIENT_VAL_DELAY=""
+SERVIENT_VAL_DEBUG=""
+SERVIENT_VAL_UINFO_FILE=""
+SERVIENT_VAL_META_DIR=""
+SERVIENT_VAL_REF_DIR=""
+SERVIENT_VAL_RES_FILE=""
+SERVIENT_VAL_SOL_DIR=""
+SERVIENT_VAL_UINFO_STRING=""
+
 ####################################### CONFIG DATA ENDS ########################################
 
 ##TODO: Get a list of all variables in a bash script.
@@ -84,236 +106,240 @@ show_help_screen ()
 
 #Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
 # and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
 
-SERVIENT_verbose_is_set=0
-SERVIENT_delay_is_set=0
-SERVIENT_debug_is_set=0
-SERVIENT_uinfo_file_is_set=0
-SERVIENT_uinfo_string_is_set=0
-SERVIENT_meta_dir_is_set=0
-SERVIENT_ref_dir_is_set=0
-SERVIENT_result_file_is_set=0
-SERVIENT_sol_dir_is_set=0
-SERVIENT_DEFAULT_VERBOSITY=2
-SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
-SERVIENT_VAL_DELAY=""
-SERVIENT_VAL_DEBUG=""
-SERVIENT_VAL_UINFO_FILE=""
-SERVIENT_VAL_META_DIR=""
-SERVIENT_VAL_REF_DIR=""
-SERVIENT_VAL_RES_FILE=""
-SERVIENT_VAL_SOL_DIR=""
-SERVIENT_VAL_UINFO_STRING=""
-## TODO check for multiple arguments and valid arguments
-while getopts "$SERVIENT_OPTION_STRING" opt; do
-	case $opt in
-		-)
-			case "${OPTARG}" in
-				verbose)
-					if (( ! $SERVIENT_verbose_is_set ))
+process_arguments()
+{
+        OPTIND=1
+	while getopts "$SERVIENT_OPTION_STRING" opt; do
+		case $opt in
+			-)
+				case "${OPTARG}" in
+					verbose)
+						if (( ! $SERVIENT_verbose_is_set ))
+						then
+							#Called only when --verbose is called ..
+							SERVIENT_verbose_is_set=1
+							SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
+						else
+							print_err "More than one instance of ${OPTARG} given during invocation"
+							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi
+						;;
+					verbose=*)
+						if (( ! $SERVIENT_verbose_is_set ))
+						then
+							val=${OPTARG#*=}
+							opt=${OPTARG%=$val}
+							echo "Parsing option: '--${opt}', value: '${val}'" >&2
+							SERVIENT_verbose_is_set=1
+							if ( [ $val -gr 1 ] && [ $val -le 5 ] )
+							then
+								SERVIENT_VAL_VERBOSITY=$val
+							else
+								print_err "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
+								exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							fi
+						else
+							print_err "More than one instance of ${OPTARG} given during invocation"
+							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi
+						;;
+					help)
+						if [ $# -eq 1 ]
+						then
+							show_help_screen
+						else
+							print_err "Option ${OPTARG} needs to be the only argument" 
+							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi
+						;;
+					*)
+						if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]
+						then
+							print_err "Unknown option --${OPTARG}"
+						fi
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						;;
+					esac
+				;;
+			d)
+				if (( ! $SERVIENT_delay_is_set ))
+				then
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_delay_is_set=1
+					if [ $SERVIENT_VAL_DELAY -gr 0 ]
 					then
-						#Called only when --verbose is called ..
-						SERVIENT_verbose_is_set=1
-						SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
+						SERVIENT_VAL_DELAY=$OPTARG
 					else
-						print_err "More than one instance of ${OPTARG} given during invocation"
+						print_err "delay should be a postive number, which is greater than zero"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
-					;;
-				verbose=*)
-					if (( ! $SERVIENT_verbose_is_set ))
+				else
+					print_err "More than one instance of $opt given during invocation"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				;;
+			D)
+				if (( ! $SERVIENT_debug_is_set ))
+				then
+					print_err "-D was trigerred, you have enabled bash debugging"
+					SERVIENT_debug_is_set=1
+					$SERVIENT_VAL_DEBUG=1
+				else
+					print_err "More than one instance of $opt given during invocation"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				;;
+			f)
+				if (( ! $SERVIENT_uinfo_file_is_set ))
+				then
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_uinfo_file_is_set=1
+					if [ ! -z "$OPTARG" ]
 					then
-						val=${OPTARG#*=}
-						opt=${OPTARG%=$val}
-						echo "Parsing option: '--${opt}', value: '${val}'" >&2
-						SERVIENT_verbose_is_set=1
-						if ( [ $val -gr 1 ] && [ $val -le 5 ] )
+						No_Slashes=`echo "$OPTARG" | awk -F "/" '{print NF;}'`
+						if [ "$No_Slashes" -ne 1 ]
 						then
-							SERVIENT_VAL_VERBOSITY=$val
+							No_Slashes=0
+						fi
+						if [ $No_Slashes -eq 1 ]
+						then
+							$SERVIENT_VAL_UINFO_FILE=$OPTARG ## This should only be file names 
 						else
-							print_err "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
+							print_err "[ $opt ] was given [ $OPTARG] as argument"
+							print_err "It must not contains \"/\", as i refers to a file in each directory of interest"
 							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 						fi
 					else
-						print_err "More than one instance of ${OPTARG} given during invocation"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					fi
-					;;
-				help)
-					if [ $# -eq 1 ]
-					then
-						show_help_screen
-					else
-						print_err "Option ${OPTARG} needs to be the only argument" 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					fi
-					;;
-				*)
-					if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
-						print_err "Unknown option --${OPTARG}"
-					fi
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					;;
-				esac
-			;;
-		d)
-			if (( ! $SERVIENT_delay_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_delay_is_set=1
-				if [ $SERVIENT_VAL_DELAY -gr 0 ]
-				then
-					SERVIENT_VAL_DELAY=$OPTARG
-				else
-					print_err "delay should be a postive number, which is greater than zero"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-				fi
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		D)
-			if (( ! $SERVIENT_debug_is_set ))
-			then
-				print_err "-D was trigerred, you have enabled bash debugging"
-				SERVIENT_debug_is_set=1
-				$SERVIENT_VAL_DEBUG=1
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		f)
-			if (( ! $SERVIENT_uinfo_file_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_uinfo_file_is_set=1
-				if [ ! -z "$OPTARG" ]
-				then
-					No_Slashes=`echo "$OPTARG" | awk -F "/" '{print NF;}'`
-					if [ "$No_Slashes" -ne 1 ]
-					then
-						No_Slashes=0
-					fi
-					if [ $No_Slashes -eq 1 ]
-					then
-						$SERVIENT_VAL_UINFO_FILE=$OPTARG ## This should only be file names 
-					else
-						print_err "[ $opt ] was given [ $OPTARG] as argument"
-						print_err "It must not contains \"/\", as i refers to a file in each directory of interest"
+						print_err "delay should be a postive number, which is greater than zero"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 				else
-					print_err "delay should be a postive number, which is greater than zero"
+					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		h)
-			if [ $# -eq 1 ]
-			then
-				show_help_screen
-			else
-				print_err "Option ${OPTARG} needs to be the only argument"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		m)
-			if (( ! $SERVIENT_meta_dir_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_meta_dir_is_set=1
-				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-				SERVIENT_VAL_META_DIR="$OPTARG"	
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		r)
-			if (( ! $SERVIENT_ref_dir_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_ref_dir_is_set=1
-				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-				SERVIENT_VAL_REF_DIR="$OPTARG"	
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		R)
-			if (( ! $SERVIENT_result_file_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_result_file_is_set=1
-				is_path_absolute "$OPTARG" || ( [ -e "$OPTARG" ] && [ ! -f "$OPTARG" ] ) && echo "[ $OPTARG ], an arg for $opt should be a file and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-				ERROR_STRING=`touch "$OPTARG" 2>&1`
-				TEMP=$?
-				if [ $TEMP -ne 0 ]
+				;;
+			h)
+				if [ $# -eq 1 ]
 				then
-					print_err " Problem creating/acessing [ $OPTARG ]"
-					print_err "$ERROR_STRING"
+					show_help_screen
+				else
+					print_err "Option ${OPTARG} needs to be the only argument"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
-				SERVIENT_VAL_RES_FILE=$OPTARG
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		s)
-			if (( ! $SERVIENT_sol_dir_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_sol_dir_is_set=1
-				( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-				SERVIENT_VAL_SOL_DIR="$OPTARG"	
-			else
-				print_err "More than one instance of $opt given during invocation"
-				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		u)
-			if (( ! $SERVIENT_uinfo_string_is_set ))
-			then
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				SERVIENT_uinfo_string_is_set=1
-				if [ -z "$OPTARG" ]
+				;;
+			m)
+				if (( ! $SERVIENT_meta_dir_is_set ))
 				then
-					print_err "Userinfo extraction string [ $OPTARG ], cant be empty"
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_meta_dir_is_set=1
+					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					SERVIENT_VAL_META_DIR="$OPTARG"	
+				else
+					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
-				OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
-				ERROR_STRING=`bash -n -c "$OPTARG" 2>&1`
-				SERVIENT_VAL_UINFO_STRING="$OPTARG"
-				TEMP=$?
-				if [ $TEMP -ne 0 ]
+				;;
+			r)
+				if (( ! $SERVIENT_ref_dir_is_set ))
 				then
-					print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
-					echo "$ERROR_STRING"
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_ref_dir_is_set=1
+					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					SERVIENT_VAL_REF_DIR="$OPTARG"	
+				else
+					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
-			else
-				print_err "More than one instance of $opt given during invocation"
+				;;
+			R)
+				if (( ! $SERVIENT_result_file_is_set ))
+				then
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_result_file_is_set=1
+					is_path_absolute "$OPTARG" || ( [ -e "$OPTARG" ] && [ ! -f "$OPTARG" ] ) && echo "[ $OPTARG ], an arg for $opt should be a file and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					ERROR_STRING=`touch "$OPTARG" 2>&1`
+					TEMP=$?
+					if [ $TEMP -ne 0 ]
+					then
+						print_err " Problem creating/acessing [ $OPTARG ]"
+						print_err "$ERROR_STRING"
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					fi
+					SERVIENT_VAL_RES_FILE=$OPTARG
+				else
+					print_err "More than one instance of $opt given during invocation"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				;;
+			s)
+				if (( ! $SERVIENT_sol_dir_is_set ))
+				then
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_sol_dir_is_set=1
+					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					SERVIENT_VAL_SOL_DIR="$OPTARG"	
+				else
+					print_err "More than one instance of $opt given during invocation"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				;;
+			u)
+				if (( ! $SERVIENT_uinfo_string_is_set ))
+				then
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
+					SERVIENT_uinfo_string_is_set=1
+					if [ -z "$OPTARG" ]
+					then
+						print_err "Userinfo extraction string [ $OPTARG ], cant be empty"
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					fi
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
+					ERROR_STRING=`bash -n -c "$OPTARG" 2>&1` ## TODO: Remove all explicit reference to bash.
+					SERVIENT_VAL_UINFO_STRING="$OPTARG"
+					TEMP=$?
+					if [ $TEMP -ne 0 ]
+					then
+						print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
+						echo "$ERROR_STRING"
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					fi
+				else
+					print_err "More than one instance of $opt given during invocation"
+					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				fi
+				;;
+			\?)
+				print_err "Invalid option: -$OPTARG"
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			fi
-			;;
-		\?)
-			print_err "Invalid option: -$OPTARG"
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			;;
-		:)
-			print_err "Option -$OPTARG requires an argument."
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-			;;
-	esac
+				;;
+			:)
+				print_err "Option -$OPTARG requires an argument."
+				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+				;;
+			esac
+	done
+	shift `expr $OPTIND - 1`
+	echo "$@"
+}
+SERVIENT_ARGS="$@"
+while [ ! -z "$SERVIENT_ARGS" ]
+do
+	SERVIENT_ARGS=$(process_arguments $ARGS)
+	TEMP=`echo "$ARGS" | awk -F " " '{print $1}'`
+	IS_POS=`echo $OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/://g' | awk -v OPTION=$TEMP '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
+	## The awk magic is quivalent to grep -w "-OPTIONCHAR" (Please note the trailing '-' character behind OPTIONCHAR)
+	## IS_POS tells if the first element in a spave sperated string of args is a postional argument or not.
+	[ $IS_POS -eq 0 ] &&  SERVIENT_NON_POSITIONAL_ARGS="$SERVIENT_NON_POSITIONAL_ARGS $TEMP"
+	T_SARRAY=""
+	for ARG in $ARGS
+	do
+		[ $IS_POS -eq 0 ] && [ "$TEMP" == "$ARG" ] && continue
+		T_SARRAY="$T_SARRAY $ARG"
+	done
+	ARGS="$T_SARRAY"
 done
+print_screen "NON_POSITIONAL_ARGS=$SERVIENT_NON_POSITIONAL_ARGS"
 
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
 #then
