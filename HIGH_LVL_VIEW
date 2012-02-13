@@ -1,23 +1,24 @@
 servient:- A high level overview
 Please note:scriptEntry can be either a solution file or directory. For the default evaluator scriptEntry for both reference and prospective solution has to be file with executbale permission enabled)
 Type of args to process:
+ Only Non option Arguments are used:
 a)only one
-a1) Single file .. try to execute it .. might be for a language specific test suite. Output is echoed as such on the screen.
-a2) Single directory .. the path to solution to directory to be tested.
+a1) Single directory .. the path to solution to directory to be tested.
  ($PATH)/REF is assumed to be the reference directory
  ($PATH)/META is assumed to be the meta directory
 b) two arguments
 b1) Both are files
    The first argument is assumed to be the reference script, the second is assumed to be solution script things are executed as is.
-   ($REF_PATH)/META is assumed to be the meta directory
-   ($REF_PATH)/($QUESTION_IDENTIFIER).args is assumed to be arguments directory
+   basename ($REF_PATH)/META is assumed to be the meta directory.
+   basename($REF_PATH)/$QUESTION_IDENTIFIER.args is assumed to be arguments directory
 b2)Both are directories
 The first argument is assumed to be reference directory and the second is assumed to be the solution directory.
    ($REF_PATH)/META is assumed to be the meta directory.
-	If you want less ambiguity, please use named arguments.
-b3) one is a file and the other is a directory 
+b3) First Non Option argument is a directory and the second is a file:
+    User The first argument as base directory and the second one as the file to be tested (for example nose_test file or scilab test file).
+b4) First Non Option argument is a file and the second is a directory:      
     Not supported.
-c) Multiple named arguments .. please see documentation.
+Multiple named arguments (Positional arguments)  with the non optional arguments. For Postional arguments, please see documentation. For non optional arguments, please see above. Used for finer grain control.
 
 by default the result is printed on screen. unless result file argument is specified.
 start as root, to convert everything to absolute paths and then drop to another user. (by default it is nobody, but you could do specify an argument.
@@ -34,11 +35,16 @@ Note
 -->The structure of META directory (directory contains scripts to customize how tests are conducted).
 In $META Top level directory (for all questions),
 (a) Pretest file Run before eval script is run for each prospective solution, reference solution tuple. (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fourth argument can be null). Return value 1 to record successful pre test execution. Return value is not critical, used mainly to force log entries.
-
+ QID of -1 is reserved for running code even before a single test is run. For the first question in the list, this is recalled with a valid QID.
 (b) eval script, to check whether the student script passed tests. The default behavior is to compare outputs of the reference script and student script (4 Arguments to the script:QID, UID-Of-prospective-solution-Dir, /full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fourth argument can be null). Return -1 to force default behavior 1 to indicate success 0 to indicate failure and F to indicate failure (dependency error, wrong permission, faults in the operating environment,etc). 
 
 (c) Posttest file is used to do post test cleanup for each prospective solution, reference solution tuple. (5 Arguments to the script:QID, UID-Of-prospective-solution-Dir, 0 if last test was successful,else -1,/full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fifth argument can be null)
 Return value 1 to record sucessful post test execution. Return value is not critical, used mainly to force log entries.
+ QID of -1 is reserved for running code after all the tests and their posttest file is run. For the last question in the list, this script is called with a valid QID, after which this script is recalled with a QID of -1.
+
+(d) Match script: Used to customise the behaviour which determines which scripts are valid and which are invalid. (5 Arguments to the script:QID, UID-Of-prospective-solution-Dir, 0 if last test was successful,else -1,/full/path/to/prospective-solution/scriptEntry, /full/path/to/reference/scriptEntry. The fifth argument can be null). Return -1 to force default behavior, else return a non null string. Return A null string to indicate trying the next tuple of prospective solution and reference script.
+
+ 
 
 in $META/<QID>.extension directory (for a specific question),
 (a) a staging directory that can contain:

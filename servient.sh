@@ -36,6 +36,8 @@ SERVIENT_ref_dir_is_set=0
 SERVIENT_result_file_is_set=0
 SERVIENT_sol_dir_is_set=0
 SERVIENT_DEFAULT_VERBOSITY=2
+$SERVIENT_NON_POSITIONAL_ARGS
+do
 SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
 SERVIENT_VAL_DELAY=""
 SERVIENT_VAL_DEBUG=""
@@ -295,12 +297,14 @@ process_arguments()
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
-					ERROR_STRING=`bash -n -c "$OPTARG" 2>&1` ## TODO: Remove all explicit reference to bash.
+					ERROR_STRING=`eval "$OPTARG" 2>&1` ## TODO: Remove all explicit reference to bash.
 					SERVIENT_VAL_UINFO_STRING="$OPTARG"
 					TEMP=$?
 					if [ $TEMP -ne 0 ]
 					then
-						print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid bash snippet"
+						print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid shell snippet"
+						print_err "Note:Please escape \" with \\\" in your shell snippet"
+						print_err "Note: Your snippet should also return 0 in a non-solution directory (sorry this is a necessary constraint"
 						echo "$ERROR_STRING"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
@@ -340,6 +344,13 @@ do
 	ARGS="$T_SARRAY"
 done
 print_screen "NON_POSITIONAL_ARGS=$SERVIENT_NON_POSITIONAL_ARGS"
+
+for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
+do
+	TEMP=`expr $TEMP + 1`
+done
+
+[ $TEMP -ne 1 ] && [ "$TEMP" -ne 2 ] && print_screen "$0: atleast one or two argument(s) mandatory" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
 #then
