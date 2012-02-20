@@ -47,6 +47,7 @@ SERVIENT_VAL_REF_DIR=""
 SERVIENT_VAL_RES_FILE=""
 SERVIENT_VAL_SOL_DIR=""
 SERVIENT_VAL_UINFO_STRING=""
+SERVIENT_VAL_TOP_DIR=""
 
 ####################################### CONFIG DATA ENDS ########################################
 
@@ -343,14 +344,39 @@ do
 	done
 	ARGS="$T_SARRAY"
 done
-print_screen "NON_POSITIONAL_ARGS=$SERVIENT_NON_POSITIONAL_ARGS"
 
+TEMP=0
 for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 do
 	TEMP=`expr $TEMP + 1`
 done
 
-[ $TEMP -ne 1 ] && [ "$TEMP" -ne 2 ] && print_screen "$0: atleast one or two argument(s) mandatory" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+if [ "$TEMP" -gt 2 ]
+then
+	print_error "$0: Can have atmost two arguments"
+	show_help_screen 
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+fi
+
+if [ "$TEMP" -eq 0 ]
+then
+	print_error "$0: Need to atleast provide a working directory"
+	show_help_screen 
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+fi
+
+if [ "$TEMP" -eq 1 ]
+then
+	#exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	print_error "Set servient top_dir here .. after checking if path is absolute :)"
+fi
+
+if [ "$TEMP" -eq 2 ]
+then
+	#exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	( ! servient_is_set_opt_ref_dir ) && ( ! servient_is_set_pros_sol_dir ) && print_screen "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	print_error "Set servient batching here .. first check for absolute paths .. then uncomment check in previous line."
+fi
 
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
 #then
