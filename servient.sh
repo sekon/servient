@@ -10,7 +10,7 @@
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
 
-SERVIENT_INSTALL_DIR=$PWD ## Make the install script change this to install location.
+SERVIENT_INSTALL_DIR="$PWD" ## Make the install script change this to install location.
 source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 
 ####################################### CONFIG DATA #############################################
@@ -78,22 +78,34 @@ get_user_id ()
 		echo -n ""
 	fi
 } 
-
+########################## Function: is_path_absolute ###########################################################
+#Purpose: Returns exit status SUCCESS (0 on most systems) if the first argument passed to the function is 	#
+#	  an absolute path.											#
+#Arguments: 1, The path string to be tested to see if it is an absolute path.					#
+#Notes: None													#
+#################################################################################################################
 is_path_absolute()
 {
-	local absolute
-	if [ ! -z "$1" ]
-	then
-		#Function returns 1 if path is absolute else 0
-		case "$1" in
-			/*) absolute=1 ;;
-			*) absolute=0 ;;
-		esac
+	if [ $absolute -eq 1 ]
+		return 0
+	else 
+		return 1
+        if [ ! -z "$1" ]
+        then
+                #Function returns 1 if path is absolute else 0
+                case "$1" in
+                        /*) absolute=1 ;;
+                        *) absolute=0 ;;
+                esac
 	else
 		absolute=0
+        fi
+        if [ $absolute -eq 1 ]
+	then
+                return 0
+        else
+                return 1
 	fi
-	return $absolute
-
 }
 
 
@@ -236,7 +248,8 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_meta_dir_is_set=1
-					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 					SERVIENT_VAL_META_DIR="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
@@ -248,7 +261,8 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_ref_dir_is_set=1
-					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 					SERVIENT_VAL_REF_DIR="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
@@ -260,7 +274,8 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_result_file_is_set=1
-					is_path_absolute "$OPTARG" || ( [ -e "$OPTARG" ] && [ ! -f "$OPTARG" ] ) && echo "[ $OPTARG ], an arg for $opt should be a file and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 					ERROR_STRING=`touch "$OPTARG" 2>&1`
 					TEMP=$?
 					if [ $TEMP -ne 0 ]
@@ -269,7 +284,7 @@ process_arguments()
 						print_err "$ERROR_STRING"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
-					SERVIENT_VAL_RES_FILE=$OPTARG
+					SERVIENT_VAL_RES_FILE="$OPTARG"
 				else
 					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -280,7 +295,8 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_sol_dir_is_set=1
-					( is_path_absolute "$OPTARG"  ||  [ ! -d "$OPTARG" ] ) &&  echo "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 					SERVIENT_VAL_SOL_DIR="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
@@ -367,15 +383,30 @@ fi
 
 if [ "$TEMP" -eq 1 ]
 then
-	#exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-	print_error "Set servient top_dir here .. after checking if path is absolute :)"
+	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  ||  ( print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+	( is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  &&  [ ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ] ) &&  print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+	SERVIENT_VAL_TOP_DIR="$SERVIENT_NON_POSITIONAL_ARGS"
+	
 fi
 
 if [ "$TEMP" -eq 2 ]
 then
-	#exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-	( ! servient_is_set_opt_ref_dir ) && ( ! servient_is_set_pros_sol_dir ) && print_screen "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	## At this point in time, all positional arguments have already been processed and has been validated.
+	( ! servient_is_set_opt_ref_dir ) && ( ! servient_is_set_pros_sol_dir ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	
 	print_error "Set servient batching here .. first check for absolute paths .. then uncomment check in previous line."
+	TEMP=0
+	## TODO 
+	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
+	do
+		is_path_absolute "$SERVINET_NPARG"  ||  ( print_err "[ $SERVINET_NPARG ], should be an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+		( is_path_absolute "$SERVINET_NPARG"  &&  [ ! -d "$SERVINET_NPARG" ] ) ) &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+		( is_path_absolute "$SERVINET_NPARG"  &&  [ ! -f "$SERVINET_NPARG" ] ) ) &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+		if [ $TEMP -eq 0 ]
+		then
+		fi	
+		TEMP=`expr $TEMP + 1`
+	done
 fi
 
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
