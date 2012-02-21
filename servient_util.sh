@@ -46,7 +46,7 @@ print_err()
 #################################################################################################################
 servient_is_set_opt_ref_dir()
 {
-	if [ -z "$SERVIENT_VAL_REF_DIR" ]
+	if [ -z "$SERVIENT_VAL_REF" ]
 	then
 		return 1
 	else
@@ -59,7 +59,7 @@ servient_is_set_opt_ref_dir()
 #################################################################################################################
 servient_is_set_pros_sol_dir()
 {
-	if [ -z "$SERVIENT_VAL_SOL_DIR" ]
+	if [ -z "$SERVIENT_VAL_SOL" ]
 	then
 		return 1
 	else

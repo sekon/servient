@@ -1,5 +1,9 @@
 servient:- A high level overview
 Please note:scriptEntry can be either a solution file or directory. For the default evaluator scriptEntry for both reference and prospective solution has to be file with executbale permission enabled)
+
+Term : named arguments (Positional arguments)
+Term : Non Option argument ( Non Positional arguments)
+
 Type of args to process:
  Only Non option Arguments are used:
 a)only one

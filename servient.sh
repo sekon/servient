@@ -43,9 +43,9 @@ SERVIENT_VAL_DELAY=""
 SERVIENT_VAL_DEBUG=""
 SERVIENT_VAL_UINFO_FILE=""
 SERVIENT_VAL_META_DIR=""
-SERVIENT_VAL_REF_DIR=""
+SERVIENT_VAL_REF=""
 SERVIENT_VAL_RES_FILE=""
-SERVIENT_VAL_SOL_DIR=""
+SERVIENT_VAL_SOL=""
 SERVIENT_VAL_UINFO_STRING=""
 SERVIENT_VAL_TOP_DIR=""
 
@@ -145,7 +145,7 @@ process_arguments()
 						then
 							val=${OPTARG#*=}
 							opt=${OPTARG%=$val}
-							echo "Parsing option: '--${opt}', value: '${val}'" >&2
+							print_err "Parsing option: '--${opt}', value: '${val}'"
 							SERVIENT_verbose_is_set=1
 							if ( [ $val -gr 1 ] && [ $val -le 5 ] )
 							then
@@ -263,7 +263,7 @@ process_arguments()
 					SERVIENT_ref_dir_is_set=1
 					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
 					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					SERVIENT_VAL_REF_DIR="$OPTARG"	
+					SERVIENT_VAL_REF="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -297,7 +297,7 @@ process_arguments()
 					SERVIENT_sol_dir_is_set=1
 					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
 					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					SERVIENT_VAL_SOL_DIR="$OPTARG"	
+					SERVIENT_VAL_SOL="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -313,8 +313,8 @@ process_arguments()
 						print_err "Userinfo extraction string [ $OPTARG ], cant be empty"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` ## TODO: Esacape alrady present quotation marks
-					ERROR_STRING=`eval "$OPTARG" 2>&1` ## TODO: Remove all explicit reference to bash.
+					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` 
+					ERROR_STRING=`eval "$OPTARG" 2>&1` 
 					SERVIENT_VAL_UINFO_STRING="$OPTARG"
 					TEMP=$?
 					if [ $TEMP -ne 0 ]
@@ -322,7 +322,7 @@ process_arguments()
 						print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid shell snippet"
 						print_err "Note:Please escape \" with \\\" in your shell snippet"
 						print_err "Note: Your snippet should also return 0 in a non-solution directory (sorry this is a necessary constraint"
-						echo "$ERROR_STRING"
+						print_screen "$ERROR_STRING"
 						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 				else
@@ -391,12 +391,10 @@ fi
 
 if [ "$TEMP" -eq 2 ]
 then
-	## At this point in time, all positional arguments have already been processed and has been validated.
+	## At this point in time, all positional arguments have already been processed and has been validated. 
+	## If user has already given prospective solutionn and ref solution directories as positional arguments, it takes higher priority.
 	( ! servient_is_set_opt_ref_dir ) && ( ! servient_is_set_pros_sol_dir ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-	
-	print_error "Set servient batching here .. first check for absolute paths .. then uncomment check in previous line."
 	TEMP=0
-	## TODO 
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do
 		is_path_absolute "$SERVINET_NPARG"  ||  ( print_err "[ $SERVINET_NPARG ], should be an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
@@ -404,11 +402,31 @@ then
 		( is_path_absolute "$SERVINET_NPARG"  &&  [ ! -f "$SERVINET_NPARG" ] ) ) &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 		if [ $TEMP -eq 0 ]
 		then
+			SERVIENT_VAL_REF="$SERVINET_NPARG"
+		elif [ $TEMP -eq 1 ]
+		then
+			SERVIENT_VAL_SOL="$SERVINET_NPARG"	
 		fi	
 		TEMP=`expr $TEMP + 1`
 	done
 fi
 
+if [ -d "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
+then
+	print_screen "Two dirs"	
+fi
+if [ -f "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
+then
+	print_screen "Two files"	
+fi
+if [ -d "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
+then
+	print_screen "SKN: First Directory second file"	
+fi
+if [ -f "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
+then
+	print_screen "First file second directory"	
+fi
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
 #then
 #	echo "Initially this script needs root previlages."
