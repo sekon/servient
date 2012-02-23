@@ -16,13 +16,6 @@ source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 ####################################### CONFIG DATA #############################################
 SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
 SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
-SCRIPT_DELAY=2
-REFERENCE_SCRIPTS_DIR_NAME="REF"
-META_DIR_NAME="META"
-USER_INFO_FILE_NAME="user_info.txt"
-USER_INFO_UID_STRING="User ID"
-REPORT_FILE="report.txt"
-VERBOSE_OUTPUT=0
 SERVIENT_VERSION_NUMBER="0.4a"
 SERVIENT_NON_POSITIONAL_ARGS=""
 SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
@@ -60,15 +53,15 @@ SERVIENT_VAL_TOP_DIR=""
 get_user_id () 
 {
 	## TODO Clean this up .. really needs to be done more elegantly
-	if [ -f "$USER_INFO_FILE_NAME" ]
+	if [ -f "$SERVIENT_VAL_UINFO_FILE" ]
 	then
-		MY_UID=`cat "$DIR/$USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'`
-		IS_UNIQ=`cat "$DIR/USER_INFO_FILE_NAME" | grep -w "$USER_INFO_UID_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'|wc -l`
+		MY_UID=`cat "$DIR/$SERVIENT_VAL_UINFO_FILE" | grep -w "$SERVIENT_VAL_UINFO_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'`
+		IS_UNIQ=`cat "$DIR/SERVIENT_VAL_UINFO_FILE" | grep -w "$SERVIENT_VAL_UINFO_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'|wc -l`
 		if [ "$IS_UNIQ" -ne "1" ]
 		then
 			if (( $VERBOSE_OUTPUT ))
 			then
-				print_screen "$DIR/$USER_INFO_FILE_NAME does not look valid or USER_INFO_UID_STRING is not unique"
+				print_screen "$DIR/$SERVIENT_VAL_UINFO_FILE does not look valid or $SERVIENT_VAL_UINFO_STRING is not unique"
 			fi
 			exit 205 ## TODO use exit, with more consistency with the rest of document.
 		else
@@ -470,7 +463,7 @@ fi
 if [ -z "$SERVIENT_VAL_DELAY" ]
 then
 	print_err "[CONFIG-WARN] Using default value $SERVIENT_DEFAULT_DELAY for delay"
-	SCRIPT_DELAY=$SERVIENT_DEFAULT_DELAY
+	SERVIENT_VAL_DELAY=$SERVIENT_DEFAULT_DELAY
 fi
 if [ -z "$SERVIENT_VAL_UINFO_FILE" ]
 then
@@ -484,7 +477,7 @@ then
 fi
 if [ -z "$SERVIENT_VAL_UINFO_STRING" ]
 then
-	print_err "[CONFIG-WARN] Variable USER_INFO_UID_STRING is null"
+	print_err "[CONFIG-WARN] Variable SERVIENT_VAL_UINFO_STRING is null"
 	if [ ! -z "$SERVIENT_VAL_UINFO_FILE" ]
 	then
 		print_err "[CONFIG-ERROR] Userinfo string is null"
@@ -493,36 +486,41 @@ then
 	fi
 fi
 
+if [ -z "$SERVIENT_VAL_RES_FILE" ]
+then
+	print_err "[CONFIG-WARN] Storing result in file $SERVIENT_VAL_TOP_DIR/result.txt"
+	SERVIENT_VAL_RES_FILE="$SERVIENT_VAL_TOP_DIR/result.txt"
+fi
 
 call_valid_ps_with_args
 
 DIR_LIST=`find . -maxdepth 1 -name "*" -type d`
-rm -f "$REPORT_FILE"
+rm -f "$SERVIENT_VAL_RES_FILE"
 for DIR in $DIR_LIST
 do
 	DIR=`echo $DIR| sed 's/^\.\///'`;	
-	if ( [ "$DIR" != "$REFERENCE_SCRIPTS_DIR_NAME" ] && [ "$DIR" != "$META_DIR_NAME" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
+	if ( [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
 	then
-		# XXX $META_DIR_NAME check needs to be there. It is not always guarenteed to be inside reference script directory.
+		# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
 		MAGIC_STRING="" ## TODO: see TODO
 		SCORE=0
 		USER_ID=$(get_user_id)
 		## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
-		if ( [ ! -z "$USER_ID"  ] || ( [ -z "$USER_INFO_FILE_NAME" ] && [ -z "$USER_INFO_UID_STRING" ] ) )
+		if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
 		then
 			FILES=`find "$DIR" -name "*" -type f`
 			for FILE in $FILES
 			do
 				FILE_NAME=`echo "$FILE" |awk -F "/" '{print $NF;}'`
 				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
-				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" ]
+				if [ -e "$SERVIENT_VAL_REF/$FILE_NAME" ]
 				then
 					REF_OP=""
 					OUR_OP=""
-					if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args" ]
+					if [ -e "$SERVIENT_VAL_REF/$FILE_PART.args" ]
 					then
 						VALID_ANSWER=0
-						exec<"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.args"
+						exec<"$SERVIENT_VAL_REF/$FILE_PART.args"
 						while read line
 						do
 							if [ -f op_ref ]
@@ -533,21 +531,21 @@ do
 							then
 								echo "" > op_our
 							fi
-							"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" $line > op_ref &
+							"$SERVIENT_VAL_REF/$FILE_NAME" $line > op_ref &
 							REF_PID=$!
 							"$DIR/$FILE_NAME" $line > op_our 
 							OUR_PID=$!
-							if [ -z "$SCRIPT_DELAY" ]	
+							if [ -z "$SERVIENT_VAL_DELAY" ]	
 							then
 								sleep 2	
 							else
-								sleep $SCRIPT_DELAY	
+								sleep $SERVIENT_VAL_DELAY	
 							fi
 							if [ -z $REF_PID ]
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									print_screen "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
+									print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
@@ -610,21 +608,21 @@ do
 						then
 							echo "" > op_our
 						fi
-						"$REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME" > op_ref &
+						"$SERVIENT_VAL_REF/$FILE_NAME" > op_ref &
 						REF_PID=$!
 						"$DIR/$FILE_NAME" > op_our &
 						OUR_PID=$!
-						if [ -z "$SCRIPT_DELAY" ]	
+						if [ -z "$SERVIENT_VAL_DELAY" ]	
 						then
 							sleep 2	
 						else
-							sleep $SCRIPT_DELAY	
+							sleep $SERVIENT_VAL_DELAY	
 						fi
 						if [ -z $REF_PID ]
 						then
 							if (( $VERBOSE_OUTPUT ))
 							then
-								print_screen "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_NAME"
+								print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
 							fi
 							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
@@ -674,7 +672,7 @@ do
 				fi
 			done
 			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "$DIR#$MAGIC_STRING,$SCORE" >> "$REPORT_FILE"
+			echo "$DIR#$MAGIC_STRING,$SCORE" >> "$SERVIENT_VAL_RES_FILE"
 		else
 			if (( $VERBOSE_OUTPUT ))
 			then
