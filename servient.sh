@@ -36,9 +36,9 @@ SERVIENT_ref_dir_is_set=0
 SERVIENT_result_file_is_set=0
 SERVIENT_sol_dir_is_set=0
 SERVIENT_DEFAULT_VERBOSITY=2
-$SERVIENT_NON_POSITIONAL_ARGS
-do
-SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
+SERVIENT_DEFAULT_DELAY=2
+SERVIENT_VAL_VERBOSITY=""
+SERVIENT_NON_POSITIONAL_ARGS=""
 SERVIENT_VAL_DELAY=""
 SERVIENT_VAL_DEBUG=""
 SERVIENT_VAL_UINFO_FILE=""
@@ -409,23 +409,31 @@ then
 		fi	
 		TEMP=`expr $TEMP + 1`
 	done
+	if [ -d "$SERVIENT_VAL_SOL" ]
+	then
+		SERVIENT_VAL_TOP_DIR=$SERVIENT_VAL_SOL
+	fi
 fi
 
 if [ -d "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
 then
 	print_screen "Two dirs"	
+	#TODO
 fi
 if [ -f "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
 	print_screen "Two files"	
+	#TODO
 fi
 if [ -d "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
 	print_screen "SKN: First Directory second file"	
+	#TODO
 fi
 if [ -f "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
 then
-	print_screen "First file second directory"	
+	print_screen "(This is invalid)First file second directory"	
+	#TODO
 fi
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
 #then
@@ -433,51 +441,54 @@ fi
 #	echo "It will later drop previlages to specifed user/nobody"
 #	exit $SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT
 #fi		
-if [ -z "$REFERENCE_SCRIPTS_DIR_NAME" ]
+if [ -z "$SERVIENT_VAL_TOP_DIR" ]
 then
-	print_err "[CONFIG-ERROR] Variable REFERENCE_SCRIPTS_DIR_NAME cant be null"
+	print_err "[CONFIG-ERROR] Variable SERVIENT_VAL_TOP_DIR cant be null"
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG 
 fi
-if [ -z "$META_DIR_NAME" ]
+
+if [ -z "$SERVIENT_VAL_REF" ]
 then
-	print_err "[CONFIG-ERROR] Variable META_DIR_NAME cant be null"
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	print_err "[CONFIG-WARN] Using $SERVIENT_VAL_TOP_DIR/REF as reference solution directory"
+	SERVIENT_VAL_REF="$SERVIENT_VAL_TOP_DIR/REF"
 fi
-if [ -z "$REPORT_FILE" ]
+if [ -z "$SERVIENT_VAL_META_DIR" ]
 then
-	print_err "[CONFIG-ERROR] Variable REPORT_FILE cant be null"
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	print_err "[CONFIG-WARN] Using $SERVIENT_VAL_TOP_DIR/META as meta directory"
+	SERVIENT_VAL_META_DIR="$SERVIENT_VAL_TOP_DIR/META"
 fi
-if [ -z "$VERBOSE_OUTPUT" ]
+if [ -z "$SERVIENT_VAL_RES_FILE" ]
 then
-	print_err "[CONFIG-WARN] Variable VERBOSE_OUTPUT is null"
-	print_err "Defaulting to zero"
-	VERBOSE_OUTPUT=0
+	print_err "[CONFIG-WARN] Using  $SERVIENT_VAL_TOP_DIR/result.txt as result file"
+	SERVIENT_VAL_RES_FILE="$SERVIENT_VAL_TOP_DIR/result.txt"
 fi
-if [ -z "$SCRIPT_DELAY" ]
+if [ -z "$SERVIENT_VAL_VERBOSITY" ]
 then
-	print_err "[CONFIG-WARN] Variable SCRIPT_DELAY is null"
-	print_err "Defaulting to delay of 2 seconds"
-	SCRIPT_DELAY=2
+	print_err "[CONFIG-WARN] Using default value $SERVIENT_DEFAULT_VERBOSITY for verbosity"
+	SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
 fi
-if [ -z "$USER_INFO_FILE_NAME" ]
+if [ -z "$SERVIENT_VAL_DELAY" ]
 then
-	print_err "[CONFIG-WARN] Variable USER_INFO_FILE_NAME is null"
-	print_err "[CONFIG-WARN] All Directories under $PWD will be checked !!"
-	if [ ! -z "$USER_INFO_UID_STRING" ]
+	print_err "[CONFIG-WARN] Using default value $SERVIENT_DEFAULT_DELAY for delay"
+	SCRIPT_DELAY=$SERVIENT_DEFAULT_DELAY
+fi
+if [ -z "$SERVIENT_VAL_UINFO_FILE" ]
+then
+	print_err "[CONFIG-WARN] All Directories under $SERVIENT_VAL_TOP_DIR will be checked !!"
+	if [ ! -z "$SERVIENT_VAL_UINFO_STRING" ]
 	then
-		print_err "[CONFIG-ERROR] Variable USER_INFO_UID_STRING is not null"
-		print_err "[CONFIG-ERROR] While USER_INFO_FILE_NAME is null !!"
+		print_err "[CONFIG-ERROR] Userinfo string is not null"
+		print_err "[CONFIG-ERROR] while user info file name is null !!"
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
-if [ -z "$USER_INFO_UID_STRING" ]
+if [ -z "$SERVIENT_VAL_UINFO_STRING" ]
 then
 	print_err "[CONFIG-WARN] Variable USER_INFO_UID_STRING is null"
-	if [ ! -z "$USER_INFO_FILE_NAME" ]
+	if [ ! -z "$SERVIENT_VAL_UINFO_FILE" ]
 	then
-		print_err "[CONFIG-ERROR] Variable USER_INFO_FILE_NAME is not null"
-		print_err "[CONFIG-ERROR] While USER_INFO_UID_STRING is null !!"
+		print_err "[CONFIG-ERROR] Userinfo string is null"
+		print_err "[CONFIG-ERROR] While user info file name is not null !!"
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 fi
