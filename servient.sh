@@ -56,7 +56,9 @@ get_user_id ()
 	if [ -f "$SERVIENT_VAL_UINFO_FILE" ]
 	then
 		MY_UID=`cat "$DIR/$SERVIENT_VAL_UINFO_FILE" | grep -w "$SERVIENT_VAL_UINFO_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'`
+		# TODO: remove grep -w
 		IS_UNIQ=`cat "$DIR/SERVIENT_VAL_UINFO_FILE" | grep -w "$SERVIENT_VAL_UINFO_STRING" | cut -d ":" -f 2 |sed 's/^[ \t]*//;s/[ \t]*$//'|wc -l`
+		# TODOL remove grep -w
 		if [ "$IS_UNIQ" -ne "1" ]
 		then
 			if (( $VERBOSE_OUTPUT ))
@@ -72,17 +74,12 @@ get_user_id ()
 	fi
 } 
 ########################## Function: is_path_absolute ###########################################################
-#Purpose: Returns exit status SUCCESS (0 on most systems) if the first argument passed to the function is 	#
-#	  an absolute path.											#
+#Purpose: Returns numerical 1, if the first argument passed to the function is 	an absolute path 0 otherwise.	#
 #Arguments: 1, The path string to be tested to see if it is an absolute path.					#
 #Notes: None													#
 #################################################################################################################
 is_path_absolute()
 {
-	if [ $absolute -eq 1 ]
-		return 0
-	else 
-		return 1
         if [ ! -z "$1" ]
         then
                 #Function returns 1 if path is absolute else 0
@@ -93,16 +90,15 @@ is_path_absolute()
 	else
 		absolute=0
         fi
-        if [ $absolute -eq 1 ]
-	then
-                return 0
-        else
-                return 1
-	fi
+	return $absolute
 }
-
-
-IS_ROOT=`id | grep -w root  | wc -l`
+TEMP=-1
+TEMP=`id | cut -d " " -f 1 | sed 's/\(^.*\)\((.*)\)/\1/' | sed 's/uid=//'`
+IS_ROOT=0
+if [ $TEMP -eq 0 ]
+then
+	IS_ROOT=1
+fi
 
 show_help_screen ()
 {
@@ -162,7 +158,8 @@ process_arguments()
 						fi
 						;;
 					*)
-						if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]
+						TEMP=`echo "$SERVIENT_OPTION_STRING" | cut -c 1`
+						if [ "$OPTERR" = 1 ] && [ "$TEMP" != ":" ]
 						then
 							print_err "Unknown option --${OPTARG}"
 						fi
@@ -241,8 +238,18 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_meta_dir_is_set=1
-					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG" 
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path" 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
+					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ]
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
 					SERVIENT_VAL_META_DIR="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
@@ -254,8 +261,18 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_ref_dir_is_set=1
-					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG" 
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
+					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
 					SERVIENT_VAL_REF="$OPTARG"	
 				else
 					print_err "More than one instance of $opt given during invocation"
@@ -267,8 +284,18 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_result_file_is_set=1
-					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					is_path_absolute "$OPTARG" 
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
+					if [ $TEMP -eq 1 -a ! -f "$OPTARG" ] 
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a file and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
 					ERROR_STRING=`touch "$OPTARG" 2>&1`
 					TEMP=$?
 					if [ $TEMP -ne 0 ]
@@ -288,9 +315,19 @@ process_arguments()
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
 					SERVIENT_sol_dir_is_set=1
-					is_path_absolute "$OPTARG"  ||  ( print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-					( is_path_absolute "$OPTARG"  &&  [ ! -d "$OPTARG" ] ) &&  print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					SERVIENT_VAL_SOL="$OPTARG"	
+					is_path_absolute "$OPTARG" 
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+					fi
+					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
+					then
+						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+					fi
+					SERVIENT_VAL_SOL="$OPTARG"
 				else
 					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -339,20 +376,27 @@ process_arguments()
 SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
 do
-	SERVIENT_ARGS=$(process_arguments $ARGS)
-	TEMP=`echo "$ARGS" | awk -F " " '{print $1}'`
+	SERVIENT_ARGS=$(process_arguments $SERVIENT_ARGS)
+	TEMP=`echo "$SERVIENT_ARGS" | awk -F " " '{print $1}'`
 	IS_POS=`echo $OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/://g' | awk -v OPTION=$TEMP '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
 	## The awk magic is quivalent to grep -w "-OPTIONCHAR" (Please note the trailing '-' character behind OPTIONCHAR)
 	## IS_POS tells if the first element in a spave sperated string of args is a postional argument or not.
 	[ $IS_POS -eq 0 ] &&  SERVIENT_NON_POSITIONAL_ARGS="$SERVIENT_NON_POSITIONAL_ARGS $TEMP"
 	T_SARRAY=""
-	for ARG in $ARGS
+	for ARG in $SERVIENT_ARGS
 	do
-		[ $IS_POS -eq 0 ] && [ "$TEMP" == "$ARG" ] && continue
-		T_SARRAY="$T_SARRAY $ARG"
+		[ $IS_POS -eq 0 ] && [ "$TEMP" == "$SERVIENT_ARG" ] && continue
+		T_SARRAY="$T_SARRAY $SERVIENT_ARG"
 	done
-	ARGS="$T_SARRAY"
+	SERVIENT_ARGS="$T_SARRAY"
 done
+
+if [ "$#" -eq 0 ]
+then
+	print_err "$0: Need to atleast provide a working directory"
+	show_help_screen 
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+fi
 
 TEMP=0
 for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
@@ -362,27 +406,31 @@ done
 
 if [ "$TEMP" -gt 2 ]
 then
-	print_error "$0: Can have atmost two arguments"
+	print_err "$0: Can have atmost two arguments"
 	show_help_screen 
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 
-if [ "$TEMP" -eq 0 ]
-then
-	print_error "$0: Need to atleast provide a working directory"
-	show_help_screen 
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-fi
 
 if [ "$TEMP" -eq 1 ]
 then
 	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  ||  ( print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
 	( is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  &&  [ ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ] ) &&  print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+	( ! servient_is_set_pros_sol_dir ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	is_path_absolute "$OPTARG" 
+	TEMP=$?
+	if [ $TEMP -eq 0 ]
+	then
+		print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+	fi
+	if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
+	then
+		print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+	fi
 	SERVIENT_VAL_TOP_DIR="$SERVIENT_NON_POSITIONAL_ARGS"
-	
-fi
-
-if [ "$TEMP" -eq 2 ]
+elif [ "$TEMP" -eq 2 ]
 then
 	## At this point in time, all positional arguments have already been processed and has been validated. 
 	## If user has already given prospective solutionn and ref solution directories as positional arguments, it takes higher priority.
@@ -391,14 +439,14 @@ then
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do
 		is_path_absolute "$SERVINET_NPARG"  ||  ( print_err "[ $SERVINET_NPARG ], should be an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-		( is_path_absolute "$SERVINET_NPARG"  &&  [ ! -d "$SERVINET_NPARG" ] ) ) &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-		( is_path_absolute "$SERVINET_NPARG"  &&  [ ! -f "$SERVINET_NPARG" ] ) ) &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+		is_path_absolute "$SERVINET_NPARG"  &&  [ ! -d "$SERVINET_NPARG" ] &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+		is_path_absolute "$SERVINET_NPARG"  &&  [ ! -f "$SERVINET_NPARG" ] &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 		if [ $TEMP -eq 0 ]
 		then
-			SERVIENT_VAL_REF="$SERVINET_NPARG"
+			SERVIENT_VAL_SOL="$SERVINET_NPARG"	
 		elif [ $TEMP -eq 1 ]
 		then
-			SERVIENT_VAL_SOL="$SERVINET_NPARG"	
+			SERVIENT_VAL_REF="$SERVINET_NPARG"
 		fi	
 		TEMP=`expr $TEMP + 1`
 	done
@@ -406,6 +454,10 @@ then
 	then
 		SERVIENT_VAL_TOP_DIR=$SERVIENT_VAL_SOL
 	fi
+else
+	show_help_screen 
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	
 fi
 
 if [ -d "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
@@ -420,7 +472,7 @@ then
 fi
 if [ -d "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
-	print_screen "SKN: First Directory second file"	
+	print_screen "First Directory second file"	
 	#TODO
 fi
 if [ -f "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
@@ -494,7 +546,7 @@ fi
 
 call_valid_ps_with_args
 
-DIR_LIST=`find . -maxdepth 1 -name "*" -type d`
+DIR_LIST=`find "$SERVIENT_VAL_TOP_DIR" -maxdepth 1 -name "*" -type d`
 rm -f "$SERVIENT_VAL_RES_FILE"
 for DIR in $DIR_LIST
 do
@@ -634,8 +686,8 @@ do
 							fi
 							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 						fi
-						IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | grep -w "$REF_PID" | grep -v grep | wc -l`
-						IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | grep -w "$OUR_PID" | grep -v grep | wc -l`
+						IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
+						IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
 						if (( $IS_REF_RUNNING ))
 						then
 							kill -s SIGKILL $REF_PID

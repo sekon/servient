@@ -16,7 +16,7 @@ b1) Both are files
    basename ($REF_PATH)/META is assumed to be the meta directory.
    basename($REF_PATH)/$QUESTION_IDENTIFIER.args is assumed to be arguments directory
 b2)Both are directories
-The first argument is assumed to be reference directory and the second is assumed to be the solution directory.
+The first argument is assumed to be the prospective solution directory and the second is assumed to be the reference directory directory.
    ($REF_PATH)/META is assumed to be the meta directory.
 b3) First Non Option argument is a directory and the second is a file:
     User The first argument as base directory and the second one as the file to be tested (for example nose_test file or scilab test file).
@@ -105,3 +105,5 @@ ps
 awk
 sed
 expr
+cut 
+find
