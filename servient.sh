@@ -80,15 +80,14 @@ get_user_id ()
 #################################################################################################################
 is_path_absolute()
 {
+	absolute=0
         if [ ! -z "$1" ]
         then
                 #Function returns 1 if path is absolute else 0
-                case "$1" in
-                        /*) absolute=1 ;;
-                        *) absolute=0 ;;
-                esac
-	else
-		absolute=0
+		if echo $1 | grep '^/' > /dev/null
+		then
+			absolute=1
+		fi
         fi
 	return $absolute
 }
@@ -320,7 +319,7 @@ process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG  ## ## *Dont* use brackets around exit
 					fi
 					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
 					then
@@ -410,24 +409,28 @@ then
 	show_help_screen 
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
-
-
 if [ "$TEMP" -eq 1 ]
 then
-	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  ||  ( print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-	( is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"  &&  [ ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ] ) &&  print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ], should be a directory and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-	( ! servient_is_set_pros_sol_dir ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-	is_path_absolute "$OPTARG" 
-	TEMP=$?
-	if [ $TEMP -eq 0 ]
+	SERVIENT_NON_POSITIONAL_ARGS=`echo "$SERVIENT_NON_POSITIONAL_ARGS"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS" 
+	TEMP1=$?
+	if [ $TEMP1 -eq 0 ]
 	then
-		print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
+		print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ] should be a directory and an absolute path" 
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG  ## ## *Dont* use brackets around exit
 	fi
-	if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
+	if [ $TEMP1 -eq 1 -a ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ] 
 	then
-		print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+			print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ] should be a directory and an absolute path" 
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+	fi
+	servient_is_set_pros_sol_dir
+	TEMP1=$?
+	if [ $TEMP1 -eq 1 ]
+	then
+		print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments"
+		show_help_screen
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 	SERVIENT_VAL_TOP_DIR="$SERVIENT_NON_POSITIONAL_ARGS"
 elif [ "$TEMP" -eq 2 ]
@@ -438,9 +441,40 @@ then
 	TEMP=0
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do
-		is_path_absolute "$SERVINET_NPARG"  ||  ( print_err "[ $SERVINET_NPARG ], should be an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ) ## ## *Dont* use brackets around exit
-		is_path_absolute "$SERVINET_NPARG"  &&  [ ! -d "$SERVINET_NPARG" ] &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-		is_path_absolute "$SERVINET_NPARG"  &&  [ ! -f "$SERVINET_NPARG" ] &&  print_err "[ $SERVINET_NPARG ], should be a directory/file and an absolute path" && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+		
+		SERVINET_NPARG=`echo "$SERVINET_NPARG"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		is_path_absolute "SERVINET_NPARG" 
+		TEMP1=$?
+		if [ $TEMP1 -eq 0 ]
+		then
+			print_err "[ $SERVINET_NPARG ] should be a directory or a file and an absolute path" 
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG  ## ## *Dont* use brackets around exit
+		fi
+		if [ $TEMP1 -eq 1 -a ! -d "$SERVINET_NPARG" ]
+		then
+			if [ ! -f "$SERVINET_NPARG" -a ! -d "$SERVINET_NPARG" ]
+			then
+				
+				print_err "[ $SERVINET_NPARG ] should be a directory or a file and an absolute path" 
+				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+			fi
+		fi
+		servient_is_set_pros_sol_dir
+		TEMP1=$?
+		if [ $TEMP1 -eq 1 ]
+		then
+			print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments"
+			show_help_screen
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		fi
+		servient_is_set_opt_ref_dir
+		TEMP1=$?
+		if [ $TEMP1 -eq 1 ]
+		then
+			print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments"
+			show_help_screen
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		fi
 		if [ $TEMP -eq 0 ]
 		then
 			SERVIENT_VAL_SOL="$SERVINET_NPARG"	

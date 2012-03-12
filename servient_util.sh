@@ -41,28 +41,28 @@ print_err()
 }
 
 ######################### Function:servient_is_set_opt_ref_dir ##################################################
-#Purpose: Returns exit status SUCCESS (0 on most systems) if reference  solution  variable is already set.	#
+#Purpose: Returns numerical 1 if reference solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################
 servient_is_set_opt_ref_dir()
 {
 	if [ -z "$SERVIENT_VAL_REF" ]
 	then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
 }
 ########################## Function:servient_is_set_pros_sol_dir ################################################
-#Purpose: Returns exit status SUCCESS (0 on most systems) if prospective solution variable is already set.	#
+#Purpose: Returns numerical 1 if prospective solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################
 servient_is_set_pros_sol_dir()
 {
 	if [ -z "$SERVIENT_VAL_SOL" ]
 	then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
 }
