@@ -520,8 +520,10 @@ fi
 #	echo "It will later drop previlages to specifed user/nobody"
 #	exit $SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT
 #fi		
+
 if [ -z "$SERVIENT_VAL_TOP_DIR" ]
 then
+	#TODO: This can be null if SERVIENT_VAL_SOL is not a directory.
 	print_err "[CONFIG-ERROR] Variable SERVIENT_VAL_TOP_DIR cant be null"
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG 
 fi
@@ -579,13 +581,14 @@ then
 fi
 
 call_valid_ps_with_args
-
+## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
+## Means we are mostly testing files.
 DIR_LIST=`find "$SERVIENT_VAL_TOP_DIR" -maxdepth 1 -name "*" -type d`
 rm -f "$SERVIENT_VAL_RES_FILE"
 for DIR in $DIR_LIST
 do
 	DIR=`echo $DIR| sed 's/^\.\///'`;	
-	if ( [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
+	if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
 	then
 		# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
 		MAGIC_STRING="" ## TODO: see TODO
