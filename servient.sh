@@ -402,7 +402,7 @@ for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 do
 	TEMP=`expr $TEMP + 1`
 done
-
+#TEMP now contains the number of arguments in the space delimited SERVIENT_NON_POSITIONAL_ARGS list
 if [ "$TEMP" -gt 2 ]
 then
 	print_err "$0: Can have atmost two arguments"
@@ -493,12 +493,9 @@ else
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	
 fi
-
-if [ -d "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
-then
-	print_screen "Two dirs"	
-	#TODO
-fi
+## When both SERVIENT_VAL_REF and SERVIENT_VAL_SOL are both
+## Directories, it is taken care of below as it is the most
+## eloberate.
 if [ -f "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
 	print_screen "Two files"	
