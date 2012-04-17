@@ -24,3 +24,4 @@ to defer userinfo file selection to runtime. (all has to be shell scripts only,r
 14) Bring Changes in 03~scilab~1 into this repo
 15) Remove all occurances of bash (this includes in syntax checking code for plugins,etc).
 16) Fix all calls to is_path_absolute, to follow the new logic.
+17) **IMP** Depend on dos2unix and convert all files from DOS to unix format.
