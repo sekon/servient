@@ -32,10 +32,12 @@
 component to a "binary" is missing ??
 	Well the execution fails and the attempt will be recorded.
 
-8)Is there something i must *not* absolutely do inadvertently 
-	Please read the documentation (TODO: Temp placeholder, never change the 
-	working directory of the script. Please use full path names, dont 
-	overwrite script variables)..
+8)Can you provide a list of absolutely critical TODO's
+	Please read the documentation.
+	Never change the working directory of the script.
+	Always use full path names, for all operations. 
+	Dont use/overwrite variables that are prefixed with
+		SERVIENT_ or servient_ in your plugins.
 
 9)How can i use language specific chop suey 
 	It would be very trivial to use $FEATURE .. as long as those features

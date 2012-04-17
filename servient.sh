@@ -10,7 +10,8 @@
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
 
-SERVIENT_INSTALL_DIR="$PWD" ## Make the install script change this to install location.
+SERVIENT_INSTALL_DIR="$PWD" ## TODO :: Make the install script change this to install location.
+
 source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 
 ####################################### CONFIG DATA #############################################
@@ -18,6 +19,7 @@ SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
 SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
 SERVIENT_VERSION_NUMBER="0.4a"
 SERVIENT_NON_POSITIONAL_ARGS=""
+SERVINET_NO_NPARGS=0
 SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
 SERVIENT_verbose_is_set=0
 SERVIENT_delay_is_set=0
@@ -403,13 +405,14 @@ do
 	TEMP=`expr $TEMP + 1`
 done
 #TEMP now contains the number of arguments in the space delimited SERVIENT_NON_POSITIONAL_ARGS list
-if [ "$TEMP" -gt 2 ]
+SERVINET_NO_NPARGS=$TEMP
+if [ "$SERVINET_NO_NPARGS" -gt 2 ]
 then
-	print_err "$0: Can have atmost two arguments"
+	print_err "$0: Can have atmost two mandatory arguments"
 	show_help_screen 
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
-if [ "$TEMP" -eq 1 ]
+if [ "$SERVINET_NO_NPARGS" -eq 1 ]
 then
 	SERVIENT_NON_POSITIONAL_ARGS=`echo "$SERVIENT_NON_POSITIONAL_ARGS"|sed 's/^[ \t]*//;s/[ \t]*$//'`
 	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS" 
@@ -433,7 +436,7 @@ then
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	fi
 	SERVIENT_VAL_TOP_DIR="$SERVIENT_NON_POSITIONAL_ARGS"
-elif [ "$TEMP" -eq 2 ]
+elif [ "$SERVINET_NO_NPARGS" -eq 2 ]
 then
 	## At this point in time, all positional arguments have already been processed and has been validated. 
 	## If user has already given prospective solutionn and ref solution directories as positional arguments, it takes higher priority.
@@ -578,37 +581,116 @@ then
 fi
 
 call_valid_ps_with_args
-## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
-## Means we are mostly testing files.
-DIR_LIST=`find "$SERVIENT_VAL_TOP_DIR" -maxdepth 1 -name "*" -type d`
-rm -f "$SERVIENT_VAL_RES_FILE"
-for DIR in $DIR_LIST
-do
-	DIR=`echo $DIR| sed 's/^\.\///'`;	
-	if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
-	then
-		# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
-		MAGIC_STRING="" ## TODO: see TODO
-		SCORE=0
-		USER_ID=$(get_user_id)
-		## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
-		if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
+if [ $SERVINET_NO_NPARGS -eq 1 ]
+then
+	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
+	## Means we are mostly testing files.
+	DIR_LIST=`find "$SERVIENT_VAL_TOP_DIR" -maxdepth 1 -name "*" -type d`
+	rm -f "$SERVIENT_VAL_RES_FILE"
+	for DIR in $DIR_LIST
+	do
+		DIR=`echo $DIR| sed 's/^\.\///'`;	
+		if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
 		then
-			FILES=`find "$DIR" -name "*" -type f`
-			for FILE in $FILES
-			do
-				FILE_NAME=`echo "$FILE" |awk -F "/" '{print $NF;}'`
-				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
-				if [ -e "$SERVIENT_VAL_REF/$FILE_NAME" ]
-				then
-					REF_OP=""
-					OUR_OP=""
-					if [ -e "$SERVIENT_VAL_REF/$FILE_PART.args" ]
+			# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
+			MAGIC_STRING="" ## TODO: see TODO
+			SCORE=0
+			USER_ID=$(get_user_id)
+			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
+			if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
+			then
+				FILES=`find "$DIR" -name "*" -type f`
+				for FILE in $FILES
+				do
+					FILE_NAME=`echo "$FILE" |awk -F "/" '{print $NF;}'`
+					FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
+					if [ -e "$SERVIENT_VAL_REF/$FILE_NAME" ]
 					then
-						VALID_ANSWER=0
-						exec<"$SERVIENT_VAL_REF/$FILE_PART.args"
-						while read line
-						do
+						REF_OP=""
+						OUR_OP=""
+						if [ -e "$SERVIENT_VAL_REF/$FILE_PART.args" ]
+						then
+							VALID_ANSWER=0
+							exec<"$SERVIENT_VAL_REF/$FILE_PART.args"
+							while read line
+							do
+								if [ -f op_ref ]
+								then
+									echo "" > op_ref
+								fi
+								if [ -f op_our ]
+								then
+									echo "" > op_our
+								fi
+								"$SERVIENT_VAL_REF/$FILE_NAME" $line > op_ref &
+								REF_PID=$!
+								"$DIR/$FILE_NAME" $line > op_our 
+								OUR_PID=$!
+								if [ -z "$SERVIENT_VAL_DELAY" ]	
+								then
+									sleep 2	
+								else
+									sleep $SERVIENT_VAL_DELAY	
+								fi
+								if [ -z $REF_PID ]
+								then
+									if (( $VERBOSE_OUTPUT ))
+									then
+										print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
+									fi
+									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+								fi
+								if [ -z $OUR_PID ]
+								then
+									if (( $VERBOSE_OUTPUT ))
+									then
+										print_screen "Problem running script $DIR/$FILE_NAME"
+									fi
+									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+								fi
+								IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+								IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS="$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+								if (( $IS_REF_RUNNING ))
+								then
+									kill -s SIGKILL $REF_PID
+								fi
+								if (( $IS_OUR_RUNNING ))
+								then
+									kill -s SIGKILL $OUR_PID
+								fi
+								REF_OP=`cat op_ref`
+								OUR_OP=`cat op_our`
+								if [ -z "$USER_ID" ]
+								then
+									USER_ID="$DIR"
+								fi
+								if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
+								then
+									if [ "$REF_OP" = "$OUR_OP" ]
+									then
+										VALID_ANSWER=1	
+									else
+										if (( $VERBOSE_OUTPUT ))
+										then
+											print_screen "$USER_ID:$FILE_NAME-Wrong"
+											print_screen "broke for input $line"
+										fi
+										MAGIC_STRING="$MAGIC_STRING 0"
+										VALID_ANSWER=0
+										break
+									fi
+								fi
+							done
+							if (( $VALID_ANSWER ))
+							then
+								if (( $VERBOSE_OUTPUT ))
+								then
+									print_screen "$USER_ID:$FILE_NAME-Correct"
+								fi
+								MAGIC_STRING="$MAGIC_STRING 1"
+								SCORE=$(( $SCORE + 1 ))
+							fi
+						else
 							if [ -f op_ref ]
 							then
 								echo "" > op_ref
@@ -617,9 +699,9 @@ do
 							then
 								echo "" > op_our
 							fi
-							"$SERVIENT_VAL_REF/$FILE_NAME" $line > op_ref &
+							"$SERVIENT_VAL_REF/$FILE_NAME" > op_ref &
 							REF_PID=$!
-							"$DIR/$FILE_NAME" $line > op_our 
+							"$DIR/$FILE_NAME" > op_our &
 							OUR_PID=$!
 							if [ -z "$SERVIENT_VAL_DELAY" ]	
 							then
@@ -639,12 +721,12 @@ do
 							then
 								if (( $VERBOSE_OUTPUT ))
 								then
-									print_screen "Problem running script $DIR/$FILE_NAME"
+									print_screen " Problem running script $DIR/$FILE_NAME"
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
-							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l` 
+							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID	)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
+							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
 							if (( $IS_REF_RUNNING ))
 							then
 								kill -s SIGKILL $REF_PID
@@ -663,118 +745,156 @@ do
 							then
 								if [ "$REF_OP" = "$OUR_OP" ]
 								then
-									VALID_ANSWER=1	
+									if (( $VERBOSE_OUTPUT ))
+									then
+										print_screen "$USER_ID:$FILE_NAME-Correct"
+									fi
+									MAGIC_STRING="$MAGIC_STRING 1"
+									SCORE=$(( $SCORE + 1 ))
 								else
 									if (( $VERBOSE_OUTPUT ))
 									then
-										print_screen "$USER_ID:$FILE_NAME-Wrong"
-										print_screen "broke for input $line"
+									 	print_screen "$USER_ID:$FILE_NAME-Wrong"
 									fi
 									MAGIC_STRING="$MAGIC_STRING 0"
-									VALID_ANSWER=0
-									break
 								fi
 							fi
-						done
-						if (( $VALID_ANSWER ))
-						then
-							if (( $VERBOSE_OUTPUT ))
-							then
-								print_screen "$USER_ID:$FILE_NAME-Correct"
-							fi
-							MAGIC_STRING="$MAGIC_STRING 1"
-							SCORE=$(( $SCORE + 1 ))
 						fi
+					fi
+				done
+				MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
+				echo "$DIR#$MAGIC_STRING,$SCORE" >> "$SERVIENT_VAL_RES_FILE"
+			else
+				if (( $VERBOSE_OUTPUT ))
+				then
+					print_screen "Cant find valid user information"
+					print_screen "Skipping $DIR"
+				fi
+				cd $PARENT_DIR
+			fi
+		fi
+	done	
+	if [ -f op_ref ]
+	then
+		rm -f op_ref
+	fi
+	if [ -f op_our ]
+	then
+		rm -f op_our
+	fi
+elif [ $SERVINET_NO_NPARGS -eq 2 ]
+then
+	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
+	## Means we are mostly testing files.
+	rm -f "$SOLUTION_SCRIPTS_DIR_NAME"/"$REPORT_FILE" 
+	find "$SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
+	if ( [ "$SOLUTION_SCRIPTS_DIR_NAME" != "$REFERENCE_SCRIPTS_DIR_NAME" ] )  
+	then
+		DIR=`echo "$SOLUTION_SCRIPTS_DIR_NAME"|awk -F "/" '{ print $NF; }'` # DIR contains the last part of the SOL script name, used to user_info.txt thing
+		MAGIC_STRING=""
+		SCORE=0
+		USER_ID=$(get_user_id)
+		if [ -z "$USER_ID"  ] 
+		then
+			USER_ID=$DIR #TODO: TAKE LAST PART OF SOL_DIR PATH
+		fi
+		if ( [ ! -z "$USER_ID"  ] )
+		then
+			FILES=`find "$SOLUTION_SCRIPTS_DIR_NAME" -maxdepth 1 -name "*" -type f`
+			for FILE in $FILES
+			do
+				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
+				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
+				## TODO : See mee and find a clean way to do what is being done here.
+				if [ "$FILE_NAME" == "${DIR}_$USER_INFO_FILE_NAME" ]
+				then
+					continue
+				fi
+				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" ]
+				then
+					VALID_ANSWER=0
+					TEMP=`grep -n "^exec" "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" | wc -l`
+					while (( $TEMP ))
+					do
+						sed -i '/exec\(.*\)\;/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
+						let TEMP-=1
+					done
+					sed -i '/^\(errcatch.-1,.stop..\)/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" 
+					export STUDENT_FILE="$SOLUTION_SCRIPTS_DIR_NAME/$FILE_NAME"
+					perl -pi -e 'print "exec $ENV{\"STUDENT_FILE\"};\n" if $. == 1' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
+					perl -pi -e "print \"errcatch(-1,\'stop\');\n\" if $. == 1" "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
+					sed -i 's/\(disp(.*)\)/\/\/\1/' "$FILE" ## XXX: Was FILE_NAME
+					scilab -nb -nwni -f "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"  > "$SOLUTION_SCRIPTS_DIR_NAME/OP" &
+					REF_PID=$!
+					if [ -z "$SCRIPT_DELAY" ]	
+					then
+						sleep 2	
 					else
-						if [ -f op_ref ]
+						sleep $SCRIPT_DELAY	
+					fi
+					if [ -z $REF_PID ]
+					then
+						if (( $VERBOSE_OUTPUT ))
 						then
-							echo "" > op_ref
+							echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
 						fi
-						if [ -f op_our ]
+						exit 255
+					fi
+					IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
+					if (( $IS_REF_RUNNING ))
+					then
+						kill -s SIGKILL $REF_PID
+					fi
+					### 
+					sed -i -e 's/[\t ]//g;/^$/d' "$SOLUTION_SCRIPTS_DIR_NAME/OP"
+					TEMP=0
+					##Temp=0, for the first iteration of the loop only
+					while read line
+					do 
+						if ( [ "$line" == "T" ] && ( (( $VALID_ANSWER )) || (( ! $TEMP )) ) )
 						then
-							echo "" > op_our
-						fi
-						"$SERVIENT_VAL_REF/$FILE_NAME" > op_ref &
-						REF_PID=$!
-						"$DIR/$FILE_NAME" > op_our &
-						OUR_PID=$!
-						if [ -z "$SERVIENT_VAL_DELAY" ]	
-						then
-							sleep 2	
+							VALID_ANSWER=1
 						else
-							sleep $SERVIENT_VAL_DELAY	
+							VALID_ANSWER=0
 						fi
-						if [ -z $REF_PID ]
+						let TEMP+=1
+					done < "$SOLUTION_SCRIPTS_DIR_NAME/OP" 
+					####
+					if (( $VALID_ANSWER ))
+					then
+						if (( $VERBOSE_OUTPUT ))
 						then
-							if (( $VERBOSE_OUTPUT ))
-							then
-								print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
-							fi
-							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+							echo "$USER_ID:$FILE_NAME-Correct"
 						fi
-						if [ -z $OUR_PID ]
+						MAGIC_STRING="$MAGIC_STRING {$FILE_PART=1}"
+						SCORE=$(( $SCORE + 1 ))
+					else
+						if (( $VERBOSE_OUTPUT ))
 						then
-							if (( $VERBOSE_OUTPUT ))
-							then
-								print_screen " Problem running script $DIR/$FILE_NAME"
-							fi
-							exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+							echo "$USER_ID:$FILE_NAME-Wrong"
 						fi
-						IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
-						IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
-						if (( $IS_REF_RUNNING ))
-						then
-							kill -s SIGKILL $REF_PID
-						fi
-						if (( $IS_OUR_RUNNING ))
-						then
-							kill -s SIGKILL $OUR_PID
-						fi
-						REF_OP=`cat op_ref`
-						OUR_OP=`cat op_our`
-						if [ -z "$USER_ID" ]
-						then
-							USER_ID="$DIR"
-						fi
-						if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
-						then
-							if [ "$REF_OP" = "$OUR_OP" ]
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen "$USER_ID:$FILE_NAME-Correct"
-								fi
-								MAGIC_STRING="$MAGIC_STRING 1"
-								SCORE=$(( $SCORE + 1 ))
-							else
-								if (( $VERBOSE_OUTPUT ))
-								then
-								 	print_screen "$USER_ID:$FILE_NAME-Wrong"
-								fi
-								MAGIC_STRING="$MAGIC_STRING 0"
-							fi
-						fi
+						MAGIC_STRING="$MAGIC_STRING {$FILE_PART=0}"
+					fi
+				else
+					if (( $VERBOSE_OUTPUT ))
+					then
+						echo "Directory[$REFERENCE_SCRIPTS_DIR_NAME] does not contain $FILE_PART.sce"
 					fi
 				fi
 			done
 			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "$DIR#$MAGIC_STRING,$SCORE" >> "$SERVIENT_VAL_RES_FILE"
+			echo "$USER_ID#$MAGIC_STRING,$SCORE" | cat >> "$SOLUTION_SCRIPTS_DIR_NAME/$REPORT_FILE"
 		else
 			if (( $VERBOSE_OUTPUT ))
 			then
-				print_screen "Cant find valid user information"
-				print_screen "Skipping $DIR"
+				echo "Cant find valid user information"
+				echo "Skipping $DIR"
 			fi
-			cd $PARENT_DIR
 		fi
 	fi
-done	
-if [ -f op_ref ]
-then
-	rm -f op_ref
+	find "$	SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
+else
+	print_err "Unkown condition encountered. Please file bug report"
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
-if [ -f op_our ]
-then
-	rm -f op_our
-fi
- 
+
