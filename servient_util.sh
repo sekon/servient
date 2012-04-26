@@ -53,7 +53,7 @@ print_err()
 # Note: This function is used to print to stderr, without consideration to verbsoity 		#
 #	level constraint.									#
 #################################################################################################
-srevient_print_err_fatal()
+servient_print_err_fatal()
 {
 	FUNC_NAME="servient_print_err_fatal"
 	if [ -z "$1" ]
@@ -67,7 +67,7 @@ srevient_print_err_fatal()
 		exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC
 	else
 		case "$2" in
-		*[!0-9]*) print_err "[FATAL] $FUNC_NAME\'s second argument is not a real number";exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC;;
+		*[!0-9]*) print_err "[FATAL] $FUNC_NAME\'s second argument is not a natural number";exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC;;
     		*) echo -n "" ;;
 		esac
 		exit $2
@@ -88,11 +88,11 @@ print_err_verblvl()
 	#TODO
 	echo "$1" >&2
 }
-######################### Function:servient_is_set_opt_ref_dir ##################################################
+######################### Function:servient_is_set_opt_ref_path ##################################################
 #Purpose: Returns numerical 1 if reference solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################
-servient_is_set_opt_ref_dir()
+servient_is_set_opt_ref_path()
 {
 	if [ -z "$SERVIENT_VAL_REF" ]
 	then
@@ -101,11 +101,11 @@ servient_is_set_opt_ref_dir()
 		return 1
 	fi
 }
-########################## Function:servient_is_set_pros_sol_dir ################################################
+########################## Function:servient_is_set_pros_sol_path ################################################
 #Purpose: Returns numerical 1 if prospective solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################
-servient_is_set_pros_sol_dir()
+servient_is_set_pros_sol_path()
 {
 	if [ -z "$SERVIENT_VAL_SOL" ]
 	then

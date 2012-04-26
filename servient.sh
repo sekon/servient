@@ -29,9 +29,9 @@ SERVIENT_debug_is_set=0
 SERVIENT_uinfo_file_is_set=0
 SERVIENT_uinfo_string_is_set=0
 SERVIENT_meta_dir_is_set=0
-SERVIENT_ref_dir_is_set=0
+SERVIENT_ref_path_is_set=0
 SERVIENT_result_file_is_set=0
-SERVIENT_sol_dir_is_set=0
+SERVIENT_sol_path_is_set=0
 SERVIENT_DEFAULT_VERBOSITY=2
 SERVIENT_DEFAULT_DELAY=2
 SERVIENT_VAL_VERBOSITY=""
@@ -111,9 +111,86 @@ show_help_screen ()
 }
 
 
+########################## Function: servient_is_valid_delay_val ################################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for delay, 0 otherwise.				#
+#Argument1: Proposed delay value:Mandatory and constrained to be non-null and a postive Natural number.		#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_delay_val()
+{
+	if [ ! -z "$1" ]
+	then
+		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		case "$1" in
+		*[!0-9]*) retun 0;;
+		esac
+		if [ "$1" -gr 0 ]
+		then
+			return 1
+		else
+			return 0
+		fi
+	fi
+	return 0
+}
+
+########################## Function: servient_is_valid_uinfo_file ###############################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for user info file, 0 otherwise.			#
+#Argument1: Proposed user info file:Mandatory and constrained to be non-null and not contain forward slashes	# 
+#		(its relative to each solution directory)							#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_uinfo_file()
+{
+	if [ ! -z "$1" ]
+	then
+		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		if [ ! -z "$1" ]
+		then
+			No_Slashes=`echo "$1" | awk -F "/" '{print NF;}'`
+			if [ "$No_Slashes" -ne 1 ]
+			then
+				return 0
+			else
+				return 1	
+			fi
+		fi
+	fi
+	return 0
+}
+########################## Function: servient_is_valid_meta_dir #################################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for meta directory, 0 otherwise.			#
+#Argument1: Proposed Path to meta directory :Mandatory and constrained to be non-null, an absolute path to a 	# 
+#		directory											#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_meta_dir()
+{
+	if [ ! -z "$1" ]
+	then
+		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		is_path_absolute "$1" 
+		TEMP1=$?
+		if [ $TEMP1 -eq 0 ]
+		then
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+			return 0
+		fi
+		if [ $TEMP1 -eq 1 -a ! -d "$1" ]
+		then
+			print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+			return 0
+		fi
+		return 1
+	fi
+	return 0
+}
 #Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
 # and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-
 process_arguments()
 {
         OPTIND=1
@@ -173,18 +250,17 @@ process_arguments()
 			d)
 				if (( ! $SERVIENT_delay_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_delay_is_set=1
-					if [ $SERVIENT_VAL_DELAY -gr 0 ]
+					servient_is_valid_delay_val $OPTARG
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
 					then
+						servient_print_err_fatal "[ $opt ] was given [ $OPTARG] as delay, it should be a postive number and should contain only positive natural numbers" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_delay_is_set=1
 						SERVIENT_VAL_DELAY=$OPTARG
-					else
-						print_err "delay should be a postive number, which is greater than zero"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 					fi
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			D)
@@ -192,7 +268,7 @@ process_arguments()
 				then
 					print_err "-D was trigerred, you have enabled bash debugging"
 					SERVIENT_debug_is_set=1
-					$SERVIENT_VAL_DEBUG=1
+					SERVIENT_VAL_DEBUG=1
 				else
 					print_err "More than one instance of $opt given during invocation"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -201,30 +277,17 @@ process_arguments()
 			f)
 				if (( ! $SERVIENT_uinfo_file_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_uinfo_file_is_set=1
-					if [ ! -z "$OPTARG" ]
+					servient_is_valid_uinfo_file "$OPTARG"
+					TEMP=$?
+					if [ $TEMP -eq 0 ]
 					then
-						No_Slashes=`echo "$OPTARG" | awk -F "/" '{print NF;}'`
-						if [ "$No_Slashes" -ne 1 ]
-						then
-							No_Slashes=0
-						fi
-						if [ $No_Slashes -eq 1 ]
-						then
-							$SERVIENT_VAL_UINFO_FILE=$OPTARG ## This should only be file names 
-						else
-							print_err "[ $opt ] was given [ $OPTARG] as argument"
-							print_err "It must not contains \"/\", as i refers to a file in each directory of interest"
-							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-						fi
-					else
-						print_err "delay should be a postive number, which is greater than zero"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ] as userinfo filename, It must not contains \"/\", as i refers to a file in each directory of interest" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_uinfo_file_is_set=1
+						SERVIENT_VAL_UINFO_FILE="$OPTARG" ## TODO: This should only be file names for all cases, but cant be checked now 
 					fi
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			h)
@@ -239,31 +302,24 @@ process_arguments()
 			m)
 				if (( ! $SERVIENT_meta_dir_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_meta_dir_is_set=1
-					is_path_absolute "$OPTARG" 
+					servient_is_valid_meta_dir "$OPTARG"
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
 					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path" 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as meta directory. It should be a valid directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_meta_dir_is_set=1
+						SERVIENT_VAL_META_DIR="$OPTARG"	
 					fi
-					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ]
-					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					fi
-					SERVIENT_VAL_META_DIR="$OPTARG"	
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			r)
-				if (( ! $SERVIENT_ref_dir_is_set ))
+				if (( ! $SERVIENT_ref_path_is_set ))
 				then
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_ref_dir_is_set=1
+					SERVIENT_ref_path_is_set=1
 					is_path_absolute "$OPTARG" 
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
@@ -314,10 +370,11 @@ process_arguments()
 				fi
 				;;
 			s)
-				if (( ! $SERVIENT_sol_dir_is_set ))
+				if (( ! $SERVIENT_sol_path_is_set ))
 				then
+					
 					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_sol_dir_is_set=1
+					SERVIENT_sol_path_is_set=1
 					is_path_absolute "$OPTARG" 
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
@@ -383,7 +440,7 @@ process_arguments()
 #	     to a file or directory.										#
 #Argument3: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
 #	    a directory.											#
-#Argument4: Prospective solution Directory path: Mandatory and constrained to be non null and an absolute path 	#
+#Argument4: Prospective solution path: Mandatory and constrained to be non null and an absolute path 	#
 #	    that points to a file or directory									#
 #Argument5: Type of behaviour to overload: Mandatory and case sensetive. Constained to be a valid choice from	#
 #	    the list given below: 										#
@@ -398,11 +455,19 @@ process_arguments()
 #################################################################################################################
 servient_plugin_finder()
 {
+	FUNC_NAME="servient_plugin_finder"
 	if [ -z "$1" ]
 	then
-		servient_print_err_fatal "Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+		servient_print_err_fatal "$FUNC_NAME-Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
 	fi
-#	if 
+	if [ -z "$3" ]
+	then
+		servient_print_err_fatal "$FUNC_NAME-Mandatory argument MetaDirectoryPath not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+	fi
+	if [ -z "$5" ]
+	then
+		servient_print_err_fatal "$FUNC_NAME-Mandatory argument Overloadstring not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+	fi
 }
 SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
@@ -470,7 +535,7 @@ elif [ "$SERVINET_NO_NPARGS" -eq 2 ]
 then
 	## At this point in time, all positional arguments have already been processed and has been validated. 
 	## If user has already given prospective solutionn and ref solution directories as positional arguments, it takes higher priority.
-	( ! servient_is_set_opt_ref_dir ) && ( ! servient_is_set_pros_sol_dir ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	( ! servient_is_set_opt_ref_path ) && ( ! servient_is_set_pros_sol_path ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	TEMP=0
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do
@@ -492,7 +557,7 @@ then
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 			fi
 		fi
-		servient_is_set_pros_sol_dir
+		servient_is_set_pros_sol_path
 		TEMP1=$?
 		if [ $TEMP1 -eq 1 ]
 		then
@@ -500,7 +565,7 @@ then
 			show_help_screen
 			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 		fi
-		servient_is_set_opt_ref_dir
+		servient_is_set_opt_ref_path
 		TEMP1=$?
 		if [ $TEMP1 -eq 1 ]
 		then
