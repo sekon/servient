@@ -17,6 +17,8 @@ source "$SERVIENT_INSTALL_DIR"/servient_util.sh
 ####################################### CONFIG DATA #############################################
 SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
 SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
+SERVIENT_EXIT_ERROR_FATAL_GENERIC=26
+SERVIENT_EXIT_ERROR_FUNC_PLGFNDR=27
 SERVIENT_VERSION_NUMBER="0.4a"
 SERVIENT_NON_POSITIONAL_ARGS=""
 SERVINET_NO_NPARGS=0
@@ -373,6 +375,34 @@ process_arguments()
 	done
 	shift `expr $OPTIND - 1`
 	echo "$@"
+}
+######################Function:servient_plugin_finder############################################################
+#Purpose:Loads scripts at runtime to dynamically modify the behaviour of servient at runtime.			#
+#Argument1: QID: Mandatory and constrained to be non null, no checks are done to validate QID 			#
+#Argument2: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
+#	     to a file or directory.										#
+#Argument3: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
+#	    a directory.											#
+#Argument4: Prospective solution Directory path: Mandatory and constrained to be non null and an absolute path 	#
+#	    that points to a file or directory									#
+#Argument5: Type of behaviour to overload: Mandatory and case sensetive. Constained to be a valid choice from	#
+#	    the list given below: 										#
+#	     TODO: PUT LIST											#
+#Returns: The value depends mainly on argument 5								#
+#	  TODO: TBD												#
+#Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
+#		Argument3,Argument4) actually points to a valid question tuple.					#
+#	Any script selected by this function can force default behaviour for the behaviour it was supposed to	#
+#		modify  by returning -1										#
+#														#
+#################################################################################################################
+servient_plugin_finder()
+{
+	if [ -z "$1" ]
+	then
+		servient_print_err_fatal "Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+	fi
+#	if 
 }
 SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
@@ -894,7 +924,9 @@ then
 	fi
 	find "$	SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
 else
-	print_err "Unkown condition encountered. Please file bug report"
+	print_err "Unkown condition encountered" 
+	print_err " If you believe this is an error, please consider filing a bug report"
+	show_help_screen
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 

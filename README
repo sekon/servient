@@ -33,11 +33,24 @@ component to a "binary" is missing ??
 	Well the execution fails and the attempt will be recorded.
 
 8)Can you provide a list of absolutely critical TODO's
-	Please read the documentation.
-	Never change the working directory of the script.
-	Always use full path names, for all operations. 
-	Dont overwrite variables that are prefixed with
-		SERVIENT_ or servient_ in your plugins.
+	In no particular order
+	a) Please read the documentation.
+	b) Never change the working directory of the script.
+	c) Always use full path names, for all operations. 
+	d) Dont overwrite variables that are prefixed with
+	   SERVIENT_ or servient_ in your plugins.
+	e) It is highly recommended you use helper functions
+	   provided to query servient about its current state.
+
+9)I Am sure some script/file is correct, but your script is not validating
+it properly ??
+	In no particular order try the following (the list is not complete)
+	a) Try provisioning more running time for the script, by increasing
+	   delay
+	b) Verify permissions (includes SELinux, apparmour,etc)
+	c) Verify dependecies of binaries
+	d) Verify that the helper process (test suite, test binary,etc) starts
+	   and works as expected exactly as in the deployment enviroment.
 
 9)How can i use language specific chop suey 
 	It would be very trivial to use $FEATURE .. as long as those features

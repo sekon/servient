@@ -36,13 +36,42 @@ print_screen()
 ########################## Function: print_err ##########################################
 # Purpose: Prints to the stderr, mainly added because of issues of foregetting toappend	#
 #	>2 at end of echo statements.							#
-# Arguments: 1: The message to be printed						#
+# Argument1: The message to be printed: Mandatory and non-null				#
 # Note: This function is used to print to stderr, without consideration to verbsoity 	#
 #	level constraint.								#
 #########################################################################################
 print_err()
 {
 	echo "$1" >&2
+}
+
+########################## Function: print_err_fatal ############################################
+# Purpose: Prints to the stderr, mainly added because of issues of foregetting toappend		#
+#	>2 at end of echo statements and exits with Argument2, if given				#
+# Argument1: The message to be printed: Mandatory and non-null					#
+# Argument2: The exit status, needs to be numeric						#
+# Note: This function is used to print to stderr, without consideration to verbsoity 		#
+#	level constraint.									#
+#################################################################################################
+srevient_print_err_fatal()
+{
+	FUNC_NAME="servient_print_err_fatal"
+	if [ -z "$1" ]
+	then
+		print_err "[FATAL] $FUNC_NAME did not recieve mandatory argument"
+	else
+		print_err " [FATAL] $1"
+	fi
+	if [ -z "$2" ]
+	then
+		exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC
+	else
+		case "$2" in
+		*[!0-9]*) print_err "[FATAL] $FUNC_NAME\'s second argument is not a real number";exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC;;
+    		*) echo -n "" ;;
+		esac
+		exit $2
+	fi
 }
 
 ########################## Function: print_err_verblvl ##################################
@@ -108,12 +137,12 @@ servient_is_path_absolute()
 #Purpose: Returns the absolute path of the directory a file resides in, only if its an absolute path. Else an 	#
 #	empty string is returned.									 	#
 #Arguments: 1: The absolute path of a file.									#
-#Notes: 1: Returns non null string only if the resolved directory is only of the type directory.		#
-#	2: Returns null string, if the argument 1 is not of the type file.					#
+#Notes: 1: Returns non null string only if Argument1 is an absolute path that points to a file. 		#
+#	2: Returns null string, if the Argument1 is not an absolute path that points to a file.			#
 #################################################################################################################
-servient_get_file_absolute_dirname()
+servient_get_dirname_from_absolute_path()
 {
-	FUNC_NAME="servient_get_file_absolute_dirname"
+	FUNC_NAME="servient_get_dirname_from_absolute_path"
 	if [ ! -z "$1" -a -f "$1" ]
 	then
 		servient_is_path_absolute "$1"
@@ -131,11 +160,11 @@ servient_get_file_absolute_dirname()
 	echo ""
 }
 ########################## Function:servient_get_fname_from_absolute_path #######################################
-#Purpose: Returns the file name from an absolute path, if the path points to a file. Else an empty string is  	#
-#	returned.									 			#
+#Purpose: Returns the QID from an absolute path, if the path points to a file. Else an empty string is		#
+#	returned. QID does not contain the "basename" of the file (i.e contains no "/" characters)		#
 #Arguments: 1: The absolute path of a file.									#
-#Notes: 1: Returns non null string only if the file name path of an absolute path.				#
-#	2: Returns null string, if the argument 1 is not of the type file.					#
+#Notes: 1: Returns non null string only if Argument1 is an absolute path that points to a file. 		#
+#	2: Returns null string, if the Argument1 is not an absolute path that points to a file.			#
 #################################################################################################################
 servient_get_fname_from_absolute_path()
 {
@@ -150,6 +179,34 @@ servient_get_fname_from_absolute_path()
 		fi
 		TEMP=`echo "$1" |awk -F "/" '{print $NF;}'`
 		echo "$TEMP"
+	fi
+	echo ""
+}
+########################## Function:servient_get_qid_from_absolute_path #########################################
+#Purpose: Returns the qid from an absolute path, if the path points to a file. Else an empty string is		#
+#	returned.									 			#
+#Arguments: 1: The absolute path of a file.									#
+#Notes: 1: Returns non null string only if Argument1 is an absolute path that points to a file.			#
+#	2: Returns null string, if the Argument1 is not an absolute path that points to a file.			#
+#################################################################################################################
+servient_get_qid_from_absolute_path()
+{
+	FUNC_NAME="servient_get_qid_from_absolute_path"
+	if [ ! -z "$1" -a -f "$1" ]
+	then
+		servient_is_path_absolute "$1"
+		TEMP=$?
+		if [ $TEMP -eq 0 ]
+		then   
+				print_err_verblvl "[$FUNC_NAME:$1], is not an abosolute path" 5
+		fi
+		TEMP=$(servient_get_fname_from_absolute_path $1)
+		if [ ! -z "$TEMP" ]
+		then
+			FILE_PART=`echo "$TEMP" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
+			echo "$FILE_PART"
+		fi
+		echo ""
 	fi
 	echo ""
 }
