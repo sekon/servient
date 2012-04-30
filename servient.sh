@@ -227,6 +227,7 @@ servient_is_valid_ref_sol_path()
 #################################################################################################################
 servient_is_valid_result_file()
 {
+
 	if [ ! -z "$1" ]
 	then
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
@@ -236,7 +237,7 @@ servient_is_valid_result_file()
 		then
 			return 0
 		fi
-		if [ "$TEMP1" -eq 1 ] 
+		if [ $TEMP1 -eq 1 ] 
 		then
 			if [  -f "$SERVIENT_VAL" ]
 			then
@@ -244,7 +245,7 @@ servient_is_valid_result_file()
 			else
 				return 0
 			fi
-			
+		fi		
 		ERROR_STRING=`touch "$SERVIENT_VAL" 2>&1`
 		TEMP1=$?
 		if [ $TEMP1 -ne 0 ]
@@ -253,8 +254,12 @@ servient_is_valid_result_file()
 			print_err " Problem creating/acessing [ $SERVIENT_VAL ]"
 			print_err "$ERROR_STRING"
 			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		else
+			return 1
 		fi
+		return 0
 	fi
+	return 0
 
 }
 ########################## Function: servient_is_valid_uinfo_str ################################################
