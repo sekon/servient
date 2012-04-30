@@ -297,9 +297,15 @@ servient_is_valid_uinfo_str()
 	return 0
 }
 
-#Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
-# and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-process_arguments()
+###################################### Function: servient_process_arguments #############################################################################
+#Purpose: Parse Positional parameters and return as soon as a non positional parameter is found.							#
+#Arguments: Depens on how the program/function is invoked.												#
+#Notes: You may need to call this function multiple times if you want to parse argument list that contains a 						#
+#		mixture of positional and non positional arguments.											#
+#	Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.						#
+# and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682		#
+#########################################################################################################################################################
+servient_process_arguments()
 {
         OPTIND=1
 	while getopts "$SERVIENT_OPTION_STRING" opt; do
@@ -539,7 +545,7 @@ servient_plugin_finder()
 SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
 do
-	SERVIENT_ARGS=$(process_arguments $SERVIENT_ARGS)
+	SERVIENT_ARGS=$(servient_process_arguments $SERVIENT_ARGS)
 	TEMP=`echo "$SERVIENT_ARGS" | awk -F " " '{print $1}'`
 	IS_POS=`echo $OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/://g' | awk -v OPTION=$TEMP '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
 	## The awk magic is quivalent to grep -w "-OPTIONCHAR" (Please note the trailing '-' character behind OPTIONCHAR)
@@ -602,7 +608,18 @@ elif [ "$SERVINET_NO_NPARGS" -eq 2 ]
 then
 	## At this point in time, all positional arguments have already been processed and has been validated. 
 	## If user has already given prospective solutionn and ref solution directories as positional arguments, it takes higher priority.
-	( ! servient_is_set_opt_ref_path ) && ( ! servient_is_set_pros_sol_path ) && print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments" && show_help_screen && exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+
+	servient_is_set_opt_ref_path
+	TEMP=$?
+	servient_is_set_pros_sol_path
+	TEMP1=$?	
+	if [ $TEMP -eq 1 -o $TEMP1 -eq 1 ]
+	then
+		print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments"
+		show_help_screen
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	fi
+	## Note: It is very important to initialize TEMP to zero
 	TEMP=0
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do

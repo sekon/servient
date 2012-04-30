@@ -41,6 +41,8 @@ component to a "binary" is missing ??
 	   SERVIENT_ or servient_ in your plugins.
 	e) It is highly recommended you use helper functions
 	   provided to query servient about its current state.
+	f) Always initialize variables to some value before using
+	   and dont assume any value implicitly.
 
 9)I Am sure some script/file is correct, but your script is not validating
 it properly ??
