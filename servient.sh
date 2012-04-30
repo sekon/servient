@@ -121,11 +121,11 @@ servient_is_valid_delay_val()
 {
 	if [ ! -z "$1" ]
 	then
-		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		case "$1" in
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		case "$SERVIENT_VAL" in
 		*[!0-9]*) retun 0;;
 		esac
-		if [ "$1" -gr 0 ]
+		if [ "$SERVIENT_VAL" -gr 0 ]
 		then
 			return 1
 		else
@@ -146,10 +146,10 @@ servient_is_valid_uinfo_file()
 {
 	if [ ! -z "$1" ]
 	then
-		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		if [ ! -z "$1" ]
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		if [ ! -z "$SERVIENT_VAL" ]
 		then
-			No_Slashes=`echo "$1" | awk -F "/" '{print NF;}'`
+			No_Slashes=`echo "$SERVIENT_VAL" | awk -F "/" '{print NF;}'`
 			if [ "$No_Slashes" -ne 1 ]
 			then
 				return 0
@@ -171,24 +171,127 @@ servient_is_valid_meta_dir()
 {
 	if [ ! -z "$1" ]
 	then
-		$1=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		is_path_absolute "$1" 
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		is_path_absolute "$SERVIENT_VAL" 
 		TEMP1=$?
 		if [ $TEMP1 -eq 0 ]
 		then
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 			return 0
 		fi
-		if [ $TEMP1 -eq 1 -a ! -d "$1" ]
+		if [ $TEMP1 -eq 1 -a ! -d "$SERVIENT_VAL" ]
 		then
-			print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 			return 0
 		fi
 		return 1
 	fi
 	return 0
 }
+########################## Function: servient_is_valid_ref_sol_path #############################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for ref path, 0 otherwise.				#
+#Argument1: Proposed Path for reference/solution script(s) :Mandatory and constrained to be non-null, an 	#
+#		absolute path to a file/directory.								#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_ref_sol_path()
+{
+	if [ ! -z "$1" ]
+	then
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		is_path_absolute "$SERVIENT_VAL" 
+		TEMP1=$?
+		if [ $TEMP1 -eq 0 ]
+		then
+			return 0
+		fi
+		if [ $TEMP1 -eq 1 ] 
+		then
+			if [ -d "$SERVIENT_VAL" -o -f "$SERVIENT_VAL" ]
+			then
+				return 1
+			else
+				return 0
+			fi
+		fi
+		return 0
+	fi
+	return 0
+
+}
+########################## Function: servient_is_valid_result_file ##############################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for result file, 0 otherwise.			#
+#Argument1: Proposed Path for result file :Mandatory and constrained to be non-null, an absolute path 		#
+#		to a file.											#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_result_file()
+{
+	if [ ! -z "$1" ]
+	then
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		is_path_absolute "$SERVIENT_VAL" 
+		TEMP1=$?
+		if [ $TEMP1 -eq 0 ]
+		then
+			return 0
+		fi
+		if [ "$TEMP1" -eq 1 ] 
+		then
+			if [  -f "$SERVIENT_VAL" ]
+			then
+				rm -f "$SERVIENT_VAL" 2>/dev/null
+			else
+				return 0
+			fi
+			
+		ERROR_STRING=`touch "$SERVIENT_VAL" 2>&1`
+		TEMP1=$?
+		if [ $TEMP1 -ne 0 ]
+		then
+			## This is deliberately placed here
+			print_err " Problem creating/acessing [ $SERVIENT_VAL ]"
+			print_err "$ERROR_STRING"
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		fi
+	fi
+
+}
+########################## Function: servient_is_valid_uinfo_str ################################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for Userinfo extraction string, 0 otherwise.	#
+#Argument1: Userinfo extraction string :Mandatory and constrained to be non-null, needs to be a valid command 	#
+#		line snippet.											#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_uinfo_str()
+{
+	if [ ! -z "$1" ]
+	then
+		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		if [ -z "$SERVIENT_VAL" ]
+		then
+			return 0
+		fi
+		SERVIENT_VAL=`echo "$SERVIENT_VAL"|sed 's/^[ \t]*//;s/[ \t]*$//'` 
+		SERVIENT_VAL_ERROR=`eval "$SERVIENT_VAL" 2>&1` 
+		TEMP1=$?
+		if [ $TEMP1 -ne 0 ]
+		then
+			## This is deliberately placed here
+			print_err "Userinfo extraction string [ $SERVIENT_VAL ], does not look like a valid shell snippet"
+			print_err "Note:Please escape \" with \\\" in your shell snippet"
+			print_err "Note: Your snippet should also return 0 even when invoked in a non-solution directory"
+			print_screen "Error Was :: [$SERVIENT_VAL_ERROR]"
+			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		else
+			return 1
+		fi
+		return 0
+	fi
+	return 0
+}
+
 #Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.
 # and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
 process_arguments()
@@ -318,106 +421,65 @@ process_arguments()
 			r)
 				if (( ! $SERVIENT_ref_path_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_ref_path_is_set=1
-					is_path_absolute "$OPTARG" 
+					servient_is_valid_ref_sol_path "$OPTARG"
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
 					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as reference path. It should etiher be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_ref_path_is_set=1
+						SERVIENT_VAL_REF="$OPTARG"	
 					fi
-					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
-					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					fi
-					SERVIENT_VAL_REF="$OPTARG"	
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			R)
 				if (( ! $SERVIENT_result_file_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_result_file_is_set=1
-					is_path_absolute "$OPTARG" 
+					servient_is_valid_result_file "$OPTARG"
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
 					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ], as result file. It should be an absolute path and should point to a file" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_result_file_is_set=1
+						SERVIENT_VAL_RES_FILE="$OPTARG"
 					fi
-					if [ $TEMP -eq 1 -a ! -f "$OPTARG" ] 
-					then
-						print_err "[ $OPTARG ], an arg for $opt should be a file and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					fi
-					ERROR_STRING=`touch "$OPTARG" 2>&1`
-					TEMP=$?
-					if [ $TEMP -ne 0 ]
-					then
-						print_err " Problem creating/acessing [ $OPTARG ]"
-						print_err "$ERROR_STRING"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					fi
-					SERVIENT_VAL_RES_FILE="$OPTARG"
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			s)
 				if (( ! $SERVIENT_sol_path_is_set ))
 				then
-					
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_sol_path_is_set=1
-					is_path_absolute "$OPTARG" 
+					servient_is_valid_ref_sol_path "$OPTARG"
 					TEMP=$?
 					if [ $TEMP -eq 0 ]
 					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG  ## ## *Dont* use brackets around exit
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as prospective solution path. It should etiher be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_sol_path_is_set=1
+						SERVIENT_VAL_SOL="$OPTARG"
 					fi
-					if [ $TEMP -eq 1 -a ! -d "$OPTARG" ] 
-					then
-						print_err "[ $OPTARG ], an arg for $opt should be a directory and an absolute path " 
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
-					fi
-					SERVIENT_VAL_SOL="$OPTARG"
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			u)
 				if (( ! $SERVIENT_uinfo_string_is_set ))
 				then
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'`
-					SERVIENT_uinfo_string_is_set=1
-					if [ -z "$OPTARG" ]
-					then
-						print_err "Userinfo extraction string [ $OPTARG ], cant be empty"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					fi
-					OPTARG=`echo $OPTARG|sed 's/^[ \t]*//;s/[ \t]*$//'` 
-					ERROR_STRING=`eval "$OPTARG" 2>&1` 
-					SERVIENT_VAL_UINFO_STRING="$OPTARG"
+					servient_is_valid_uinfo_str "$OPTARG"
 					TEMP=$?
-					if [ $TEMP -ne 0 ]
+					if [ $TEMP -eq 0 ]
 					then
-						print_err "Userinfo extraction string [ $OPTARG ], does not look like a valid shell snippet"
-						print_err "Note:Please escape \" with \\\" in your shell snippet"
-						print_err "Note: Your snippet should also return 0 in a non-solution directory (sorry this is a necessary constraint"
-						print_screen "$ERROR_STRING"
-						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as userinfo extraction shell script snippet. It cannot be executed as given, independetly in the current environment"  $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					else 	
+						SERVIENT_uinfo_string_is_set=1
+						SERVIENT_VAL_UINFO_STRING="$OPTARG"
 					fi
 				else
-					print_err "More than one instance of $opt given during invocation"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 				fi
 				;;
 			\?)
