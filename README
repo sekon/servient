@@ -53,6 +53,7 @@ it properly ??
 	c) Verify dependecies of binaries
 	d) Verify that the helper process (test suite, test binary,etc) starts
 	   and works as expected exactly as in the deployment enviroment.
+	e) Check if you have the needed amount of free disk space.
 
 9)How can i use language specific chop suey 
 	It would be very trivial to use $FEATURE .. as long as those features
