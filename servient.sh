@@ -284,42 +284,6 @@ servient_process_arguments()
 	shift `expr $OPTIND - 1`
 	echo "$@"
 }
-######################Function:servient_plugin_finder############################################################
-#Purpose:Loads scripts at runtime to dynamically modify the behaviour of servient at runtime.			#
-#Argument1: QID: Mandatory and constrained to be non null, no checks are done to validate QID 			#
-#Argument2: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
-#	     to a file or directory.										#
-#Argument3: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
-#	    a directory.											#
-#Argument4: Prospective solution path: Mandatory and constrained to be non null and an absolute path 	#
-#	    that points to a file or directory									#
-#Argument5: Type of behaviour to overload: Mandatory and case sensetive. Constained to be a valid choice from	#
-#	    the list given below: 										#
-#	     TODO: PUT LIST											#
-#Returns: The value depends mainly on argument 5								#
-#	  TODO: TBD												#
-#Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
-#		Argument3,Argument4) actually points to a valid question tuple.					#
-#	Any script selected by this function can force default behaviour for the behaviour it was supposed to	#
-#		modify  by returning -1										#
-#														#
-#################################################################################################################
-servient_plugin_finder()
-{
-	FUNC_NAME="servient_plugin_finder"
-	if [ -z "$1" ]
-	then
-		servient_print_err_fatal "$FUNC_NAME-Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
-	fi
-	if [ -z "$3" ]
-	then
-		servient_print_err_fatal "$FUNC_NAME-Mandatory argument MetaDirectoryPath not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
-	fi
-	if [ -z "$5" ]
-	then
-		servient_print_err_fatal "$FUNC_NAME-Mandatory argument Overloadstring not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
-	fi
-}
 SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
 do
