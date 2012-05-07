@@ -13,41 +13,6 @@
 SERVIENT_INSTALL_DIR="$PWD" ## TODO :: Make the install script change this to install location.
 
 source "$SERVIENT_INSTALL_DIR"/servient_util.sh
-
-####################################### CONFIG DATA #############################################
-SERVIENT_EXIT_ERROR_SCRIPT_CONFIG=200
-SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
-SERVIENT_EXIT_ERROR_FATAL_GENERIC=26
-SERVIENT_EXIT_ERROR_FUNC_PLGFNDR=27
-SERVIENT_VERSION_NUMBER="0.4a"
-SERVIENT_NON_POSITIONAL_ARGS=""
-SERVINET_NO_NPARGS=0
-SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
-SERVIENT_verbose_is_set=0
-SERVIENT_delay_is_set=0
-SERVIENT_debug_is_set=0
-SERVIENT_uinfo_file_is_set=0
-SERVIENT_uinfo_string_is_set=0
-SERVIENT_meta_dir_is_set=0
-SERVIENT_ref_path_is_set=0
-SERVIENT_result_file_is_set=0
-SERVIENT_sol_path_is_set=0
-SERVIENT_DEFAULT_VERBOSITY=2
-SERVIENT_DEFAULT_DELAY=2
-SERVIENT_VAL_VERBOSITY=""
-SERVIENT_NON_POSITIONAL_ARGS=""
-SERVIENT_VAL_DELAY=""
-SERVIENT_VAL_DEBUG=""
-SERVIENT_VAL_UINFO_FILE=""
-SERVIENT_VAL_META_DIR=""
-SERVIENT_VAL_REF=""
-SERVIENT_VAL_RES_FILE=""
-SERVIENT_VAL_SOL=""
-SERVIENT_VAL_UINFO_STRING=""
-SERVIENT_VAL_TOP_DIR=""
-
-####################################### CONFIG DATA ENDS ########################################
-
 ##TODO: Get a list of all variables in a bash script.
 # VARIABLES=$(echo "compgen -A variable" >> "$PLUGIN_FILE" ;source "$PLUGIN_FILE";sed -i '$d' "$PLUGIN_FILE")
 # echo "$VARIABLES" | grep <PAttern>
@@ -108,193 +73,6 @@ show_help_screen ()
 	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
 	print_screen "$0 - $SERVIENT_VERSION_NUMBER"
 	print_screen "Available options for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
-}
-
-
-########################## Function: servient_is_valid_delay_val ################################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for delay, 0 otherwise.				#
-#Argument1: Proposed delay value:Mandatory and constrained to be non-null and a postive Natural number.		#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_delay_val()
-{
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		case "$SERVIENT_VAL" in
-		*[!0-9]*) retun 0;;
-		esac
-		if [ "$SERVIENT_VAL" -gr 0 ]
-		then
-			return 1
-		else
-			return 0
-		fi
-	fi
-	return 0
-}
-
-########################## Function: servient_is_valid_uinfo_file ###############################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for user info file, 0 otherwise.			#
-#Argument1: Proposed user info file:Mandatory and constrained to be non-null and not contain forward slashes	# 
-#		(its relative to each solution directory)							#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_uinfo_file()
-{
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		if [ ! -z "$SERVIENT_VAL" ]
-		then
-			No_Slashes=`echo "$SERVIENT_VAL" | awk -F "/" '{print NF;}'`
-			if [ "$No_Slashes" -ne 1 ]
-			then
-				return 0
-			else
-				return 1	
-			fi
-		fi
-	fi
-	return 0
-}
-########################## Function: servient_is_valid_meta_dir #################################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for meta directory, 0 otherwise.			#
-#Argument1: Proposed Path to meta directory :Mandatory and constrained to be non-null, an absolute path to a 	# 
-#		directory											#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_meta_dir()
-{
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		is_path_absolute "$SERVIENT_VAL" 
-		TEMP1=$?
-		if [ $TEMP1 -eq 0 ]
-		then
-			return 0
-		fi
-		if [ $TEMP1 -eq 1 -a ! -d "$SERVIENT_VAL" ]
-		then
-			return 0
-		fi
-		return 1
-	fi
-	return 0
-}
-########################## Function: servient_is_valid_ref_sol_path #############################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for ref path, 0 otherwise.				#
-#Argument1: Proposed Path for reference/solution script(s) :Mandatory and constrained to be non-null, an 	#
-#		absolute path to a file/directory.								#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_ref_sol_path()
-{
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		is_path_absolute "$SERVIENT_VAL" 
-		TEMP1=$?
-		if [ $TEMP1 -eq 0 ]
-		then
-			return 0
-		fi
-		if [ $TEMP1 -eq 1 ] 
-		then
-			if [ -d "$SERVIENT_VAL" -o -f "$SERVIENT_VAL" ]
-			then
-				return 1
-			else
-				return 0
-			fi
-		fi
-		return 0
-	fi
-	return 0
-
-}
-########################## Function: servient_is_valid_result_file ##############################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for result file, 0 otherwise.			#
-#Argument1: Proposed Path for result file :Mandatory and constrained to be non-null, an absolute path 		#
-#		to a file.											#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_result_file()
-{
-
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		is_path_absolute "$SERVIENT_VAL" 
-		TEMP1=$?
-		if [ $TEMP1 -eq 0 ]
-		then
-			return 0
-		fi
-		if [ $TEMP1 -eq 1 ] 
-		then
-			if [  -f "$SERVIENT_VAL" ]
-			then
-				rm -f "$SERVIENT_VAL" 2>/dev/null
-			else
-				return 0
-			fi
-		fi		
-		ERROR_STRING=`touch "$SERVIENT_VAL" 2>&1`
-		TEMP1=$?
-		if [ $TEMP1 -ne 0 ]
-		then
-			## This is deliberately placed here
-			print_err " Problem creating/acessing [ $SERVIENT_VAL ]"
-			print_err "$ERROR_STRING"
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-		else
-			return 1
-		fi
-		return 0
-	fi
-	return 0
-
-}
-########################## Function: servient_is_valid_uinfo_str ################################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for Userinfo extraction string, 0 otherwise.	#
-#Argument1: Userinfo extraction string :Mandatory and constrained to be non-null, needs to be a valid command 	#
-#		line snippet.											#
-#Notes: Returns 0 if Argument1 is null.										#
-#	Function only validates Argument1, and does not actually store Argument1				#
-#################################################################################################################
-servient_is_valid_uinfo_str()
-{
-	if [ ! -z "$1" ]
-	then
-		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		if [ -z "$SERVIENT_VAL" ]
-		then
-			return 0
-		fi
-		SERVIENT_VAL=`echo "$SERVIENT_VAL"|sed 's/^[ \t]*//;s/[ \t]*$//'` 
-		SERVIENT_VAL_ERROR=`eval "$SERVIENT_VAL" 2>&1` 
-		TEMP1=$?
-		if [ $TEMP1 -ne 0 ]
-		then
-			## This is deliberately placed here
-			print_err "Userinfo extraction string [ $SERVIENT_VAL ], does not look like a valid shell snippet"
-			print_err "Note:Please escape \" with \\\" in your shell snippet"
-			print_err "Note: Your snippet should also return 0 even when invoked in a non-solution directory"
-			print_screen "Error Was :: [$SERVIENT_VAL_ERROR]"
-			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-		else
-			return 1
-		fi
-		return 0
-	fi
-	return 0
 }
 
 ###################################### Function: servient_process_arguments #############################################################################
@@ -1079,3 +857,94 @@ else
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 
+##########################Function:servient_plugin_finder########################################################
+#Purpose:Loads scripts at runtime to dynamically modify the behaviour of servient at runtime.			#
+#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity		#
+#Argument2: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
+#	    a directory.											#
+#Argument3: Type of behaviour to overload: Mandatory and case sensetive. Constained to be a valid choice from	#
+#	    the list given below: 										#
+#	     TODO: PUT LIST											#
+#Argument4: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
+#	     to a file or directory.										#
+#Argument5: Prospective solution Directory path: Optional and can be null. If present should be an absolute path#
+#	    that points to a file or directory									#
+#Returns: The value depends mainly on argument 3								#
+#	  TODO: TBD												#
+#Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
+#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.	#
+#	Any script selected by this function can force default behaviour for the behaviour it was supposed to	#
+#		modify  by returning a non zero integer value							#
+#	This function should only be called if run time plugin selection was asked for, hence meta directory	#
+#		will be set and should be valid.								#
+#################################################################################################################
+servient_plugin_finder()
+{
+        FUNC_NAME="servient_plugin_finder"
+        if [ -z "$1" ]
+        then   
+                servient_print_err_fatal "$FUNC_NAME-Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+        fi
+        if [ -z "$2" ]
+        then   
+                servient_print_err_fatal "$FUNC_NAME-Mandatory argument MetaDirectoryPath not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+        fi
+        if [ -z "$3" ]
+        then
+                servient_print_err_fatal "$FUNC_NAME-Mandatory argument Overloadstring not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+        fi
+	if [ -z "$4" ]
+	then
+                servient_print_err_fatal "$FUNC_NAME-Mandatory argument Reference path not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
+	fi
+	SERVIENT_VAL="$1"
+	servient_is_valid_qid_syntax "$SERVIENT_VAL"
+	TEMP1=$?
+	if [ $TEMP1 -ne 1 ]
+	then
+		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], is syntactically not a valid QID" 4
+		return 0
+	fi
+	SERVIENT_VAL="$2"
+	servient_is_valid_meta_dir "$SERVIENT_VAL"
+	TEMP1=$?
+	if [ $TEMP1 -ne 1 ]
+	then
+		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for meta script directory" 4
+		return 0
+	fi
+	SERVIENT_VAL="$3"
+	servient_is_valid_plugin_modeSel "$SERVIENT_VAL"
+	TEMP1=$?
+	if [ $TEMP1 -ne 1 ]
+	then
+		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for plugin mode selection " 4
+		return 0
+	fi
+	SERVIENT_VAL="$4"
+	servient_is_valid_ref_sol_path "$SERVIENT_VAL"
+	TEMP1=$?
+	if [ $TEMP1 -ne 1 ]
+	then
+		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for reference script entry " 4
+		return 0
+	fi
+	if [ ! -z "$5" ]
+	then
+		SERVIENT_VAL="$5"
+		servient_is_valid_ref_sol_path "$SERVIENT_VAL"
+		TEMP1=$?
+		if [ $TEMP1 -ne 1 ]
+		then
+			print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for prospective solution script entry " 4
+			return 0
+		fi
+	fi	
+	SERVIENT_VAL="$3"
+	case "$SERVIENT_VAL" in
+		PLGN_MDSLCT_ALL)
+				echo "DEBUG(plgn fndr)"
+				;;
+	esac
+	
+}
