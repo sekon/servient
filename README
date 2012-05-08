@@ -1,38 +1,35 @@
 			Frequently asked questions:
 1)What is servient ??
-	servient aims to be a small, simple, flexible and light weight black
-	box unit-testing framework.
+	A pluggable testing framework written in POSIX compliant shell script. It
+	focusses on testing in a class room like environment and can be used to
+	validate executables written in a variety of languages.
 
-2)What is so unique about servient ??
-	It aims to provide a pluggable way to primitively validate scripts
-	written in multiple languages (both compiled and interpreted).
-
-3)What is/are the use case(s) servient aims to target ??
+2)What is/are the use case(s) servient aims to target ??
 	Currently, suppose you are an instructor in a class and have to
 	validate scripts of "n" students, for a question paper containing "m"
 	questions in one go.
 
-4)You say validation .. could you elaborate ??
-	Instructor provides a reference script for each of the "m" questions,
-	that a student could attempt to answer along with test cases to
-	validate student scripts.
+3)You say validation .. could you elaborate ??
+	Instructor provides a "reference entity" for each of the "m" questions,
+	and atmost "n" "prospective entities" can be validated.
 
-5)What about security ??
+4)What about security ??
 	There are *NO* security features in place, you have to take necessary
 	precautions (like running in a chroot with fine grained access control
 	/running in a throwable VM). Please remember, you are running arbitarty
-	code submitted by untrusted third parties.
+	code submitted by potentially untrusted third parties.
 
-6)So a validated script is guaranteed to be correct ??
-	No, it is entirely dependent on the instructor provided reference
-	script along with coverage of the test case(s). Providing testcase(s)
-	is completly optional.
+5)So a validated script is guaranteed to be correct ??
+	No, it is entirely dependent on the provided reference entity.
+	More specifically, it has to deal with the coverage provided by
+	the reference entity. 
+	It must be noted that providing testcase(s) is completly optional.
 
-7)Does the scipt do dependency checking ?? What happens if some required
-component to a "binary" is missing ??
-	Well the execution fails and the attempt will be recorded.
+6)Does the scipt do dependency checking ?? What happens if some required
+component to an executable is missing ??
+	The execution of the executable fails and the attempt will is recorded.
 
-8)Can you provide a list of absolutely critical TODO's
+7)Can you provide a list of absolutely critical TODO's
 	In no particular order
 	a) Please read the documentation.
 	b) Never change the working directory of the script.
@@ -41,10 +38,11 @@ component to a "binary" is missing ??
 	   SERVIENT_ or servient_ in your plugins.
 	e) It is highly recommended you use helper functions
 	   provided to query servient about its current state.
-	f) Always initialize variables to some value before using
-	   and dont assume any value implicitly.
+	f) Always initialize variables to some value before using them
+	   and dont assume any intial value before usage in any new block
+	   in the executable.
 
-9)I Am sure some script/file is correct, but your script is not validating
+8)I Am sure some script/file is correct, but your script is not validating
 it properly ??
 	In no particular order try the following (the list is not complete)
 	a) Try provisioning more running time for the script, by increasing
