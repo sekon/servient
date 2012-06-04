@@ -16,9 +16,9 @@ changing internal variables and only then try to source them.
 and an optional verbosirty level. If nothing is given the default log level
 is used which is 2. Verbsority level of upto file can be given, greater values
 are forced to be 5.
-11) Prefix everything with SERVIENT_, to prevent accidental overwriting by added code. 
+11) Prefix everything with SERVIENT_, to prevent accidental overwriting by added code [DONE] 
 12) Write functions log,print,print_stderr and helper functions for retrival 
-of stdargs/its default values.
+of stdargs/its default values. [DONE]
 13) create functions get_userinfo_file and is_userinfo_file. Also create function
 to defer userinfo file selection to runtime. (all has to be shell scripts only,related to 0).
 14) Bring Changes in 03~scilab~1 into this repo
@@ -27,3 +27,4 @@ to defer userinfo file selection to runtime. (all has to be shell scripts only,r
 17) **IMP** Depend on dos2unix and/or convert all files from DOS to unix format.
 18) **IMP**  Ability to overload just get_user_id or only which file is selected for
 get_user_id independently
+19) Add dry-run option

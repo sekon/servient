@@ -890,7 +890,7 @@ servient_plugin_finder()
 	TEMP1=$?
 	if [ $TEMP1 -ne 1 ]
 	then
-		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for reference script entry " 4
+		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for Reference Solution path" 4
 		return 0
 	fi
 	if [ ! -z "$5" ]
@@ -900,15 +900,126 @@ servient_plugin_finder()
 		TEMP1=$?
 		if [ $TEMP1 -ne 1 ]
 		then
-			print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for prospective solution script entry " 4
+			print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for Prospective Solution path" 4
 			return 0
 		fi
 	fi	
+	SERVIENT_VAL_UINFOS_FOR_QID=""
+	SERVIENT_VAL_MATCHS_FOR_QID=""
+	SERVIENT_VAL_PRETESTS_FOR_QID=""
+	SERVIENT_VAL_POSTTESTS_FOR_QID=""
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]		
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_UINFO_FOR_QID" ]
+			then
+				SERVIENT_VAL_UINFOS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_UINFO_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_UINFO_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_UINFO_FOR_QID" ]
+			then
+				SERVIENT_VAL_UINFO_FOR_QID="$2"/"$SERVIENT_PLGN_UINFO_EXE"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
+	fi
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+			then
+				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_MATCH_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+			then
+				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$SERVIENT_PLGN_MATCH_EXE"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
+			then
+				SERVIENT_VAL_PRETESTS_FOR_QID="$2"/"$1"/"$SERVIENT_VAL_PRETESTS_FOR_QID"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_PRETEST_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_PRETEST_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_PRETEST_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
+			then
+				SERVIENT_VAL_PRETESTS_FOR_QID="$2"/"$SERVIENT_VAL_PRETESTS_FOR_QID"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_PRETEST_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
+			then
+				SERVIENT_VAL_POSTTESTS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_POSTTEST_EXE"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
+			then
+				SERVIENT_VAL_POSTTESTS_FOR_QID="$2"/"$SERVIENT_PLGN_POSTTEST_EXE"
+			fi
+		else	
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
+		fi
+	fi
 	SERVIENT_VAL="$3"
 	case "$SERVIENT_VAL" in
 		PLGN_MDSLCT_ALL)
-				echo "DEBUG(plgn fndr)"
+				if [ $SERVIENT_VAL_DEBUG -ne 1 ]
+				then
+					print_err "[$FUNC_NAME:$SERVIENT_VAL], is only available if you enable debug mode" 
+					return 0
+				else
+					print_err_verblvl "[$FUNC_NAME] Got $1 as QID" 2
+					print_err_verblvl "[$FUNC_NAME] Got $2 as Meta Directory path" 2
+					print_err_verblvl "[$FUNC_NAME] Got $4 as Reference Solution path" 2
+					print_err_verblvl "[$FUNC_NAME] Got $5 as Prospective Solution path" 2
+					print_err_verblvl "[$FUNC_NAME] UINFO Script for $1 is $SERVIENT_VAL_UINFO_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] MATCH Script for $1 is $SERVIENT_VAL_MATCHS_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] PRETEST Script for $1 is $SERVIENT_VAL_PRETESTS_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] POSTTEST Script for $1 is $SERVIENT_VAL_POSTTESTS_FOR_QID"
+				fi## debug		
 				;;
 	esac
-	
 }

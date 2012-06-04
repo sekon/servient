@@ -32,9 +32,13 @@ SERVIENT_VAL_RES_FILE=""
 SERVIENT_VAL_SOL=""
 SERVIENT_VAL_UINFO_STRING=""
 SERVIENT_VAL_TOP_DIR=""
+#space seperated list of all options for plugin mode slection
 SERVIENT_PLGN_MDSLCT_ALLOPTIONS="PLGN_MDSLCT_ALL"
+SERVIENT_PLGN_UINFO_EXE="unfo"
+SERVIENT_PLGN_MATCH_EXE="mtch"
+SERVIENT_PLGN_PRETEST_EXE="pretst"
+SERVIENT_PLGN_POSTTEST_EXE="psttst"
 ####################################### INITIALIZATION ENDS ########################################
-
 SERVIENT_INVOKED_NAME=`echo "$SERVIENT_INVOKED_NAME" |awk -F "/" '{print $NF;}'`
 if [ "$SERVIENT_INVOKED_NAME" == "servient_util.sh" ]
 then
@@ -64,6 +68,7 @@ call_valid_ps_with_args()
 print_screen()
 {
 	#TODO
+	# TODO use servient_is_valid_pstv_ntrl_num here
 	echo "$1"
 }
 
@@ -100,6 +105,7 @@ servient_print_err_fatal()
 	then
 		exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC
 	else
+		# use servient_is_valid_pstv_ntrl_num here
 		case "$2" in
 		*[!0-9]*) print_err "[FATAL] $FUNC_NAME\'s second argument is not a natural number";exit $SERVIENT_EXIT_ERROR_FATAL_GENERIC;;
     		*) echo -n "" ;;
@@ -120,6 +126,7 @@ servient_print_err_fatal()
 print_err_verblvl()
 {
 	#TODO
+	#TODO use servient_is_valid_pstv_ntrl_num here 
 	echo "$1" >&2
 }
 ######################### Function:servient_is_set_opt_ref_path ##################################################
@@ -166,7 +173,6 @@ servient_is_path_absolute()
 	fi
 	return $absolute
 }
-
 ########################## Function:servient_get_file_absolute_basename #########################################
 #Purpose: Returns the absolute path of the directory a file resides in, only if its an absolute path. Else an 	#
 #	empty string is returned.									 	#
@@ -237,20 +243,20 @@ servient_get_qid_from_absolute_path()
 		TEMP=$(servient_get_fname_from_absolute_path $1)
 		if [ ! -z "$TEMP" ]
 		then
-			FILE_PART=`echo "$TEMP" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
-			echo "$FILE_PART"
+			SERVIENT_FILE_PART=`echo "$TEMP" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
+			echo "$SERVIENT_FILE_PART"
 		fi
 		echo ""
 	fi
 	echo ""
 }
-########################## Function: servient_is_valid_delay_val ################################################
-#Purpose: Returns numerical 1, if Argument1 is a valid value for delay, 0 otherwise.				#
-#Argument1: Proposed delay value:Mandatory and constrained to be non-null and a postive Natural number.		#
+########################## Function: servient_is_valid_pstv_ntrl_num  ###########################################
+#Purpose: Returns numerical 1, if Argument1 is a valid postive natural number, 0 otherwise.			#
+#Argument1: A value: If it is non-null and a postive Natural number returns 1, 0 otherwise.			#
 #Notes: Returns 0 if Argument1 is null.										#
 #	Function only validates Argument1, and does not actually store Argument1				#
 #################################################################################################################
-servient_is_valid_delay_val()
+servient_is_valid_pstv_ntrl_num()
 {
 	if [ ! -z "$1" ]
 	then
@@ -264,10 +270,23 @@ servient_is_valid_delay_val()
 		else
 			return 0
 		fi
+	else
+		return 0
 	fi
-	return 0
 }
 
+########################## Function: servient_is_valid_delay_val ################################################
+#Purpose: Returns numerical 1, if Argument1 is a valid value for delay, 0 otherwise.				#
+#Argument1: Proposed delay value:Mandatory and constrained to be non-null and a postive Natural number.		#
+#Notes: Returns 0 if Argument1 is null.										#
+#	Function only validates Argument1, and does not actually store Argument1				#
+#################################################################################################################
+servient_is_valid_delay_val()
+{
+	servient_is_valid_pstv_ntrl_num "$1"
+	SERVIENT_VAL=$?
+	return $SERVIENT_VAL
+}
 ########################## Function: servient_is_valid_uinfo_file ###############################################
 #Purpose: Returns numerical 1, if Argument1 is a valid value for user info file, 0 otherwise.			#
 #Argument1: Proposed user info file:Mandatory and constrained to be non-null and not contain forward slashes	# 
@@ -429,7 +448,6 @@ servient_is_valid_uinfo_str()
 	fi
 	return 0
 }
-
 ################################Function:servient_is_valid_qid_syntax############################
 #Purpose: To check If a QID is syntactically valid.						#
 #Argument1: QID Value: Mandatory and constrained to be non null. It has to start with an 	#

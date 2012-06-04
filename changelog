@@ -2,6 +2,7 @@ servient (0.4a) testing; urgency=low
 
   * Initial release.
   * Code cleanup.
+  * Created servient_util.sh, Directory named doc, cleaned up HIGH_LVL_VIEW and README.
   * TODO:Add more stuff. Remove this line when releasing.
 
  -- Harish Badrinath <see@CREDITS.file>  Mon, 26 Dec 2011 18:10:41 +0530
