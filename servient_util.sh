@@ -7,10 +7,14 @@ SERVIENT_EXIT_UTIL_NOT_SOURCED=230
 SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT=25
 SERVIENT_EXIT_ERROR_FATAL_GENERIC=26
 SERVIENT_EXIT_ERROR_FUNC_PLGFNDR=27
+SERVIENT_SHOWED_HELP_SCRN=0
+SERVIENT_SUCCESS=0
 SERVIENT_VERSION_NUMBER="0.4a"
 SERVIENT_NON_POSITIONAL_ARGS=""
 SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
+SERVIENT_LONG_OPTION_STRING="verbose dryrun help"
 SERVIENT_verbose_is_set=0
+SERVIENT_dryrun_is_set=0
 SERVIENT_delay_is_set=0
 SERVIENT_debug_is_set=0
 SERVIENT_uinfo_file_is_set=0
@@ -22,6 +26,7 @@ SERVIENT_sol_path_is_set=0
 SERVIENT_DEFAULT_VERBOSITY=2
 SERVIENT_DEFAULT_DELAY=2
 SERVIENT_VAL_VERBOSITY=""
+SERVIENT_VAL_DRYRUN=""
 SERVIENT_NON_POSITIONAL_ARGS=""
 SERVIENT_VAL_DELAY=""
 SERVIENT_VAL_DEBUG=""
@@ -38,6 +43,10 @@ SERVIENT_PLGN_UINFO_EXE="unfo"
 SERVIENT_PLGN_MATCH_EXE="mtch"
 SERVIENT_PLGN_PRETEST_EXE="pretst"
 SERVIENT_PLGN_POSTTEST_EXE="psttst"
+SERVIENT_VAL_UINFOS_FOR_QID=""
+SERVIENT_VAL_MATCHS_FOR_QID=""
+SERVIENT_VAL_PRETESTS_FOR_QID=""
+SERVIENT_VAL_POSTTESTS_FOR_QID=""
 ####################################### INITIALIZATION ENDS ########################################
 SERVIENT_INVOKED_NAME=`echo "$SERVIENT_INVOKED_NAME" |awk -F "/" '{print $NF;}'`
 if [ "$SERVIENT_INVOKED_NAME" == "servient_util.sh" ]
@@ -129,7 +138,91 @@ print_err_verblvl()
 	#TODO use servient_is_valid_pstv_ntrl_num here 
 	echo "$1" >&2
 }
-######################### Function:servient_is_set_opt_ref_path ##################################################
+
+############################Function: servient_show_help_screen #########################
+# Purpose: Prints the help information on screen					#
+# Arguments: None				 					#
+# Notes: None										#
+#########################################################################################
+servient_show_help_screen()
+{
+	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
+	MY_LONG_OPTION_STRING=`echo "$SERVIENT_LONG_OPTION_STRING" | awk '{for(i=1;i<=NF;i++){printf "--"$i" "}}'`
+	print_err "$0 - $SERVIENT_VERSION_NUMBER"
+	print_err "Available options for $0 are $MY_OPTIONAL_STRING $MY_LONG_OPTION_STRING"
+}
+
+show_help_screen ()
+{
+	print_err "[TODO] Replace call to show_help_screen with call to servient_show_help_screen"
+	servient_show_help_screen
+}
+
+############################Function: servient_check_all_longOpts #######################
+# Purpose: Return numerical 1 if all substrings are valid long command line switches, 0	#
+#	otherwise.									#
+# Arguments: Variable, depends on what is being tested					#
+# Notes: None										#
+#########################################################################################
+servient_check_all_longOpts()
+{
+	FUNC_NAME="servient_check_all_longOpts"
+	if [ ! -z "$1" ]
+	then
+		OPTIND=1
+		while getopts "$SERVIENT_OPTION_STRING" opt; do
+			case $opt in
+				-)
+					case "${OPTARG}" in
+						*)
+							val=${OPTARG#*=}
+							long_opt=${OPTARG%=$val}
+							servient_is_tkn_valid_long_opt "$long_opt"
+							TEMP=$?
+							;;
+					esac
+			esac
+			[[ $TEMP -ne 1 ]] && break
+		done
+		if [ ! -z "$long_opt" ]
+		then
+			servient_is_tkn_valid_long_opt "$long_opt"
+			IS_LNG_POS=$?
+			if [ $IS_LNG_POS -ne 1 ]
+			then
+				print_err_verblvl "Unknown long command line switch $long_opt" 
+				servient_show_help_screen
+				SERVIENT_INVALID_ARGS=1
+				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+		        fi
+		fi
+		shift `expr $OPTIND - 1`
+		echo "$@"
+		exit $ERVIENT_SUCCESS 
+	fi
+	exit $ERVIENT_SUCCESS
+}
+############################Function: servient_is_tkn_valid_long_opt ####################
+# Purpose: Returns numerical 1 if the first argument passed to the function is a valid	#
+#	switch for the long command line option.					#
+# Arguments: 1: Contains the token that is being checked for validity as a long command	#
+#	line option.									#
+# Notes: None										#
+#########################################################################################
+servient_is_tkn_valid_long_opt()
+{
+	FUNC_NAME="servient_is_tkn_valid_long_opt"
+	if [ ! -z "$1" ]
+	then
+		SERVIENT_VAL=$1
+		SERVIENT_VAL=`echo "$SERVIENT_VAL" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+		TEMP=`echo "$SERVIENT_LONG_OPTION_STRING" | awk -v OPTION="$SERVIENT_VAL" '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
+		return $TEMP
+	fi
+	return 0
+
+}
+######################### Function:servient_is_set_opt_ref_path #################################################
 #Purpose: Returns numerical 1 if reference solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################
@@ -142,7 +235,7 @@ servient_is_set_opt_ref_path()
 		return 1
 	fi
 }
-########################## Function:servient_is_set_pros_sol_path ################################################
+########################## Function:servient_is_set_pros_sol_path ###############################################
 #Purpose: Returns numerical 1 if prospective solution variable is already set.					#
 #Arguments: None												#
 #################################################################################################################

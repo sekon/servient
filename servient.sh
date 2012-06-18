@@ -68,13 +68,6 @@ then
 	IS_ROOT=1
 fi
 
-show_help_screen ()
-{
-	MY_OPTIONAL_STRING=`echo $SERVIENT_OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/:/\ OPTION\ /g'`
-	print_screen "$0 - $SERVIENT_VERSION_NUMBER"
-	print_screen "Available options for $0 are $MY_OPTIONAL_STRING" "--verbose[=VALUE] --help"
-}
-
 ###################################### Function: servient_process_arguments #############################################################################
 #Purpose: Parse Positional parameters and return as soon as a non positional parameter is found.							#
 #Arguments: Depens on how the program/function is invoked.												#
@@ -97,8 +90,7 @@ servient_process_arguments()
 							SERVIENT_verbose_is_set=1
 							SERVIENT_VAL_VERBOSITY=$SERVIENT_DEFAULT_VERBOSITY
 						else
-							print_err "More than one instance of ${OPTARG} given during invocation"
-							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							servient_print_err_fatal "More than one instance of ${OPTARG} given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 						fi
 						;;
 					verbose=*)
@@ -106,27 +98,34 @@ servient_process_arguments()
 						then
 							val=${OPTARG#*=}
 							opt=${OPTARG%=$val}
-							print_err "Parsing option: '--${opt}', value: '${val}'"
-							SERVIENT_verbose_is_set=1
 							if ( [ $val -gr 1 ] && [ $val -le 5 ] )
 							then
 								SERVIENT_VAL_VERBOSITY=$val
+								SERVIENT_verbose_is_set=1
 							else
-								print_err "verbose level should be a positive number, which is greater than 0 but lesser than 5 !!"
-								exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+								servient_print_err_fatal "Verbose level should be a positive number, which is greater than 0 but lesser than 5 !!" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 							fi
 						else
-							print_err "More than one instance of ${OPTARG} given during invocation"
-							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							servient_print_err_fatal "More than one instance of ${OPTARG} given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi
+						;;
+					dryrun)
+						if (( ! $SERVIENT_dryrun_is_set ))
+						then
+							SERVIENT_VAL_DRYRUN=1
+							SERVIENT_dryrun_is_set=1
+						else
+							servient_print_err_fatal "More than one instance of ${OPTARG} given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 						fi
 						;;
 					help)
 						if [ $# -eq 1 ]
 						then
 							show_help_screen
+							SERVIENT_SHOWED_HELP_SCRN=1	
+							exit $SERVIENT_SUCCESS
 						else
-							print_err "Option ${OPTARG} needs to be the only argument" 
-							exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							servient_print_err_fatal "Option ${OPTARG} needs to be the only argument" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 						fi
 						;;
 					*)
@@ -186,6 +185,8 @@ servient_process_arguments()
 				if [ $# -eq 1 ]
 				then
 					show_help_screen
+					SERVIENT_SHOWED_HELP_SCRN=1	
+					exit $SERVIENT_SUCCESS
 				else
 					print_err "Option ${OPTARG} needs to be the only argument"
 					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -285,16 +286,27 @@ servient_process_arguments()
 	echo "$@"
 }
 SERVIENT_ARGS="$@"
+SERVIENT_INVALID_ARGS=0
+while [ ! -z "$SERVIENT_ARGS" ]
+do
+	SERVIENT_ARGS=$(servient_check_all_longOpts $SERVIENT_ARGS)
+	TEMP=$?
+	if [ $TEMP -ne $SERVIENT_SUCCESS ]
+	then
+		exit $TEMP
+	fi
+done
+SERVIENT_ARGS="$@"
 while [ ! -z "$SERVIENT_ARGS" ]
 do
 	SERVIENT_ARGS=$(servient_process_arguments $SERVIENT_ARGS)
 	TEMP=`echo "$SERVIENT_ARGS" | awk -F " " '{print $1}'`
-	IS_POS=`echo $OPTION_STRING | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/://g' | awk -v OPTION=$TEMP '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
+	IS_POS=`echo "$SERVIENT_OPTION_STRING" | sed 's/^:-://' |sed 's/\([a-zA-Z]\)/\ \1/g' |sed 's/\([a-zA-Z]\)/-\1/g' |sed 's/://g' | awk -v OPTION=$TEMP '{for(i=1;i<=NF;i++){if( (match($i,OPTION)== 1) && (length($i) == length(OPTION)) ){print $i}}}' | wc -l`
 	## The awk magic is quivalent to grep -w "-OPTIONCHAR" (Please note the trailing '-' character behind OPTIONCHAR)
 	## IS_POS tells if the first element in a spave sperated string of args is a postional argument or not.
 	[ $IS_POS -eq 0 ] &&  SERVIENT_NON_POSITIONAL_ARGS="$SERVIENT_NON_POSITIONAL_ARGS $TEMP"
 	T_SARRAY=""
-	for ARG in $SERVIENT_ARGS
+	for SERVIENT_ARG in $SERVIENT_ARGS
 	do
 		[ $IS_POS -eq 0 ] && [ "$TEMP" == "$SERVIENT_ARG" ] && continue
 		T_SARRAY="$T_SARRAY $SERVIENT_ARG"
@@ -304,9 +316,14 @@ done
 
 if [ "$#" -eq 0 ]
 then
-	print_err "$0: Need to atleast provide a working directory"
-	show_help_screen 
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 1 ]
+	then
+		print_err "$0: Need to atleast provide a working directory"
+		show_help_screen 
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	else
+		exit $SERVIENT_SUCCESS
+	fi
 fi
 
 TEMP=0
@@ -413,8 +430,13 @@ then
 		SERVIENT_VAL_TOP_DIR=$SERVIENT_VAL_SOL
 	fi
 else
-	show_help_screen 
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 1 ]
+	then
+		show_help_screen 
+		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+	else
+		exit $SERVIENT_SUCCESS
+	fi
 	
 fi
 ## When both SERVIENT_VAL_REF and SERVIENT_VAL_SOL are both
@@ -930,6 +952,7 @@ servient_plugin_finder()
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
+		fi
 	fi
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
 	then

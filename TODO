@@ -27,4 +27,5 @@ to defer userinfo file selection to runtime. (all has to be shell scripts only,r
 17) **IMP** Depend on dos2unix and/or convert all files from DOS to unix format.
 18) **IMP**  Ability to overload just get_user_id or only which file is selected for
 get_user_id independently
-19) Add dry-run option
+19) Add dry-run option [ PARTLY DONE]
+20) When servient is passed --help/-h option help screen is printed twice ??
