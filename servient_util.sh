@@ -49,7 +49,7 @@ SERVIENT_VAL_PRETESTS_FOR_QID=""
 SERVIENT_VAL_POSTTESTS_FOR_QID=""
 ####################################### INITIALIZATION ENDS ########################################
 SERVIENT_INVOKED_NAME=`echo "$SERVIENT_INVOKED_NAME" |awk -F "/" '{print $NF;}'`
-if [ "$SERVIENT_INVOKED_NAME" == "servient_util.sh" ]
+if [ "$SERVIENT_INVOKED_NAME" = "servient_util.sh" ]
 then
 	echo "You can only source this shell script" >&2
 	exit $SERVIENT_EXIT_UTIL_NOT_SOURCED
@@ -556,6 +556,7 @@ servient_is_valid_qid_syntax()
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
 		case "$SERVIENT_VAL" in	
 		[a-z]*) TEMP1=1 ;;
+		[A-Z]*) TEMP1=1 ;;
 		esac
 		SERVIENT_VAL=`echo "$SERVIENT_VAL"|tr -d [:alnum:]`
 		if [ ! -z "$SERVIENT_VAL" ]
@@ -582,7 +583,7 @@ servient_is_valid_plugin_modeSel()
 		SERVIENT_VAL=`echo "$SERVIENT_VAL" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 		for VAL in $SERVIENT_PLGN_MDSLCT_ALLOPTIONS
 		do
-			if [ "$VAL" == "$SERVIENT_VAL" ]
+			if [ "$VAL" = "$SERVIENT_VAL" ]
 			then
 				return 1
 			fi

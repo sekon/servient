@@ -12,7 +12,7 @@
 
 SERVIENT_INSTALL_DIR="$PWD" ## TODO :: Make the install script change this to install location.
 
-source "$SERVIENT_INSTALL_DIR"/servient_util.sh
+. "$SERVIENT_INSTALL_DIR"/servient_util.sh
 ##TODO: Get a list of all variables in a bash script.
 # VARIABLES=$(echo "compgen -A variable" >> "$PLUGIN_FILE" ;source "$PLUGIN_FILE";sed -i '$d' "$PLUGIN_FILE")
 # echo "$VARIABLES" | grep <PAttern>
@@ -308,7 +308,7 @@ do
 	T_SARRAY=""
 	for SERVIENT_ARG in $SERVIENT_ARGS
 	do
-		[ $IS_POS -eq 0 ] && [ "$TEMP" == "$SERVIENT_ARG" ] && continue
+		[ $IS_POS -eq 0 ] && [ "$TEMP" = "$SERVIENT_ARG" ] && continue
 		T_SARRAY="$T_SARRAY $SERVIENT_ARG"
 	done
 	SERVIENT_ARGS="$T_SARRAY"
@@ -749,7 +749,7 @@ then
 				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
 				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
 				## TODO : See mee and find a clean way to do what is being done here.
-				if [ "$FILE_NAME" == "${DIR}_$USER_INFO_FILE_NAME" ]
+				if [ "$FILE_NAME" = "${DIR}_$USER_INFO_FILE_NAME" ]
 				then
 					continue
 				fi
@@ -794,7 +794,7 @@ then
 					##Temp=0, for the first iteration of the loop only
 					while read line
 					do 
-						if ( [ "$line" == "T" ] && ( (( $VALID_ANSWER )) || (( ! $TEMP )) ) )
+						if ( [ "$line" = "T" ] && ( (( $VALID_ANSWER )) || (( ! $TEMP )) ) )
 						then
 							VALID_ANSWER=1
 						else
