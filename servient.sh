@@ -864,6 +864,7 @@ fi
 #	This function should only be called if run time plugin selection was asked for, hence meta directory	#
 #		will be set and should be valid.								#
 #################################################################################################################
+
 servient_plugin_finder()
 {
         FUNC_NAME="servient_plugin_finder"
@@ -907,6 +908,7 @@ servient_plugin_finder()
 		print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for plugin mode selection " 4
 		return 0
 	fi
+        FUNC_NAME="servient_plugin_finder" # FUNC_NAME overwritten by servient_is_valid_plugin_modeSel
 	SERVIENT_VAL="$4"
 	servient_is_valid_ref_sol_path "$SERVIENT_VAL"
 	TEMP1=$?
@@ -934,9 +936,11 @@ servient_plugin_finder()
 	then
 		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
 		then
-			if [ -z "$SERVIENT_VAL_UINFO_FOR_QID" ]
+			if [ -z "$SERVIENT_VAL_UINFOS_FOR_QID" ]
 			then
 				SERVIENT_VAL_UINFOS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFOS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
@@ -946,9 +950,11 @@ servient_plugin_finder()
 	then
 		if [ -x "$2"/"$SERVIENT_PLGN_UINFO_EXE" ]
 		then
-			if [ -z "$SERVIENT_VAL_UINFO_FOR_QID" ]
+			if [ -z "$SERVIENT_VAL_UINFOS_FOR_QID" ]
 			then
-				SERVIENT_VAL_UINFO_FOR_QID="$2"/"$SERVIENT_PLGN_UINFO_EXE"
+				SERVIENT_VAL_UINFOS_FOR_QID="$2"/"$SERVIENT_PLGN_UINFO_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFO_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
@@ -961,6 +967,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 			then
 				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
@@ -973,6 +981,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 			then
 				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$SERVIENT_PLGN_MATCH_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
@@ -985,6 +995,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
 			then
 				SERVIENT_VAL_PRETESTS_FOR_QID="$2"/"$1"/"$SERVIENT_VAL_PRETESTS_FOR_QID"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME]  SERVIENT_VAL_PRETESTS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_PRETEST_EXE does not have executable bit" 3
@@ -997,6 +1009,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
 			then
 				SERVIENT_VAL_PRETESTS_FOR_QID="$2"/"$SERVIENT_VAL_PRETESTS_FOR_QID"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME]  SERVIENT_VAL_PRETESTS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_PRETEST_EXE does not have executable bit" 3
@@ -1009,6 +1023,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
 			then
 				SERVIENT_VAL_POSTTESTS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_POSTTEST_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME]  SERVIENT_VAL_POSTTESTS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
@@ -1021,6 +1037,8 @@ servient_plugin_finder()
 			if [ -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
 			then
 				SERVIENT_VAL_POSTTESTS_FOR_QID="$2"/"$SERVIENT_PLGN_POSTTEST_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME]  SERVIENT_VAL_POSTTESTS_FOR_QID assigned value multiple times"
 			fi
 		else	
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
@@ -1029,7 +1047,7 @@ servient_plugin_finder()
 	SERVIENT_VAL="$3"
 	case "$SERVIENT_VAL" in
 		PLGN_MDSLCT_ALL)
-				if [ $SERVIENT_VAL_DEBUG -ne 1 ]
+				if [ $SERVIENT_VAL_DRYRUN -ne 1 ]
 				then
 					print_err "[$FUNC_NAME:$SERVIENT_VAL], is only available if you enable debug mode" 
 					return 0
@@ -1042,7 +1060,7 @@ servient_plugin_finder()
 					print_err_verblvl "[$FUNC_NAME] MATCH Script for $1 is $SERVIENT_VAL_MATCHS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] PRETEST Script for $1 is $SERVIENT_VAL_PRETESTS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] POSTTEST Script for $1 is $SERVIENT_VAL_POSTTESTS_FOR_QID"
-				fi## debug		
+				fi		
 				;;
 	esac
 }
