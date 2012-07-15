@@ -8,7 +8,6 @@ I have tested this code primarily on the following Unix shells
 (c) ash shipped with busybox-1.12.4.
 
 Busybox was compiled with the following flags while testing:
-It was compiled with the following features
 (a) ASH_BASH_COMPAT [=n] 
 (b) ASH_JOB_CONTROL [=y]
 (c) ASH_READ_NCHARS [=y]  
@@ -58,5 +57,5 @@ environment:
 
 
 Thank you for your interest in servient. Hope it was of some help to you.
-Please do write back with Feedback, suggestions, donations ( nah kidding ),
-or anything of that sort.
+Please do write back with Feedback, suggestions, flames or anything of that
+sort.
