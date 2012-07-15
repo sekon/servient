@@ -5,26 +5,21 @@ Last Modified Date: Sun, 15 Jan 2012 14:51:37 +0530
 Reference directory).
 2) Create a post and pre test scipts.
 3) Create a pluggable Architecture (closely related to 0).
-4) Use getopts (note the "s") to parse command line [DONE]
 5) Update doc file with valid doc
 6) Cleanup purpose in servient.sh
 7) Record a failure to execute as "F" to (hint use sed 's/[^\ +\t+0-9]//g')
-8) Do shell script option parsing and create a help screen[DONE Duplicate of 4]
 9) Write a function to check if (to be) sourced scripts are unknowingly
 changing internal variables and only then try to source them.
 10) Create function log_message which takes two args: the actual message
 and an optional verbosirty level. If nothing is given the default log level
 is used which is 2. Verbsority level of upto file can be given, greater values
 are forced to be 5.
-11) Prefix everything with SERVIENT_, to prevent accidental overwriting by added code [DONE] 
-12) Write functions log,print,print_stderr and helper functions for retrival 
-of stdargs/its default values. [DONE]
 13) create functions get_userinfo_file and is_userinfo_file. Also create function
-to defer userinfo file selection to runtime. (all has to be shell scripts only,related to 0).
+to defer userinfo file selection to runtime. (all has to follow specs,related to 0).
 14) Bring Changes in 03~scilab~1 into this repo
 15) Remove all occurances of bash (this includes in syntax checking code for plugins,etc).
 16) Fix all calls to is_path_absolute, to follow the new logic.
 17) **IMP** Depend on dos2unix and/or convert all files from DOS to unix format.
 18) **IMP**  Ability to overload just get_user_id or only which file is selected for
-get_user_id independently
-19) Add dry-run option [ PARTLY DONE]
+get_user_id independently [PARTIALLY DONE]
+20)
