@@ -28,4 +28,3 @@ to defer userinfo file selection to runtime. (all has to be shell scripts only,r
 18) **IMP**  Ability to overload just get_user_id or only which file is selected for
 get_user_id independently
 19) Add dry-run option [ PARTLY DONE]
-20) When servient is passed --help/-h option help screen is printed twice ??
