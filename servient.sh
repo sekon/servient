@@ -5,7 +5,7 @@
 #Taken Over date/Creation date: Sun, 06 Nov 2011 21:38:58 +0530					#
 #Taken Over by:											#
 #Taken Over date:										#
-#Date of last commit:Mon, 26 Dec 2011 18:10:41 +0530						#
+#Date of last commit:Sun, 15 Jul 2012 22:56:52 +0530						#
 #License: GPL V3 +										#
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
@@ -119,13 +119,16 @@ servient_process_arguments()
 						fi
 						;;
 					help)
-						if [ $# -eq 1 ]
+						if [ $SERVIENT_SHOWED_HELP_SCRN -eq 0 ]
 						then
-							show_help_screen
-							SERVIENT_SHOWED_HELP_SCRN=1	
-							exit $SERVIENT_SUCCESS
-						else
-							servient_print_err_fatal "Option ${OPTARG} needs to be the only argument" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							if [ $# -eq 1 ]
+							then
+								show_help_screen
+								SERVIENT_SHOWED_HELP_SCRN=1	
+								exit $SERVIENT_SUCCESS
+							else
+								servient_print_err_fatal "Option ${OPTARG} needs to be the only argument" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+							fi
 						fi
 						;;
 					*)
@@ -182,14 +185,17 @@ servient_process_arguments()
 				fi
 				;;
 			h)
-				if [ $# -eq 1 ]
+				if [ $SERVIENT_SHOWED_HELP_SCRN -eq 0 ]
 				then
-					show_help_screen
-					SERVIENT_SHOWED_HELP_SCRN=1	
-					exit $SERVIENT_SUCCESS
-				else
-					print_err "Option ${OPTARG} needs to be the only argument"
-					exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					if [ $# -eq 1 ]
+					then
+						show_help_screen
+						SERVIENT_SHOWED_HELP_SCRN=1	
+						exit $SERVIENT_SUCCESS
+					else
+						print_err "Option ${OPTARG} needs to be the only argument"
+						exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+					fi
 				fi
 				;;
 			m)
@@ -316,7 +322,7 @@ done
 
 if [ "$#" -eq 0 ]
 then
-	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 1 ]
+	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 0 ]
 	then
 		print_err "$0: Need to atleast provide a working directory"
 		show_help_screen 
@@ -430,7 +436,7 @@ then
 		SERVIENT_VAL_TOP_DIR=$SERVIENT_VAL_SOL
 	fi
 else
-	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 1 ]
+	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 0 ]
 	then
 		show_help_screen 
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -946,7 +952,7 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$SERVIENT_PLGN_UINFO_EXE" ]
+	if [ -e "$2"/"$SERVIENT_PLGN_UINFO_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
 	then
 		if [ -x "$2"/"$SERVIENT_PLGN_UINFO_EXE" ]
 		then
@@ -958,6 +964,34 @@ servient_plugin_finder()
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_FLNM_EXE" ]
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_UINFO_FLNM_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_UINFOS_FLNM_FOR_QID" ]
+			then
+				SERVIENT_VAL_UINFOS_FLNM_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFOS_FLNM_FOR_QID assigned value multiple times"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_UINFO_FLNM_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_UINFO_FLNM_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_FLNM_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_UINFO_FLNM_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_UINFOS_FLNM_FOR_QID" ]
+			then
+				SERVIENT_VAL_UINFOS_FLNM_FOR_QID="$2"/"$SERVIENT_PLGN_UINFO_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFOS_FLNM_FOR_QID assigned value multiple times"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_FLNM_EXE does not have executable bit" 3
 		fi
 	fi
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
@@ -974,7 +1008,7 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_EXE" ]
+	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
 	then
 		if [ -x "$2"/"$SERVIENT_PLGN_MATCH_EXE" ]
 		then
@@ -1002,7 +1036,7 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_PRETEST_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$SERVIENT_PLGN_PRETEST_EXE" ]
+	if [ -e "$2"/"$SERVIENT_PLGN_PRETEST_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
 	then
 		if [ -x "$2"/"$SERVIENT_PLGN_PRETEST_EXE" ]
 		then
@@ -1030,7 +1064,7 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
+	if [ -e "$2"/"$SERVIENT_PLGN_POSTTEST_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
 	then
 		if [ -x "$2"/"$SERVIENT_PLGN_POSTTEST_EXE" ]
 		then
