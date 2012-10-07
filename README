@@ -54,6 +54,7 @@ environment:
 	expr
 	cut 
 	find
+	dirname
 
 
 Thank you for your interest in servient. Hope it was of some help to you.

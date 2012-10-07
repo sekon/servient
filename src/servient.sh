@@ -10,8 +10,7 @@
 #Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
 #################################################################################################
 
-SERVIENT_INSTALL_DIR="$PWD" ## TODO :: Make the install script change this to install location.
-
+SERVIENT_INSTALL_DIR=`dirname $0` ## TODO :: Make the install script change this to install location.
 . "$SERVIENT_INSTALL_DIR"/servient_util.sh
 ##TODO: Get a list of all variables in a bash script.
 # VARIABLES=$(echo "compgen -A variable" >> "$PLUGIN_FILE" ;source "$PLUGIN_FILE";sed -i '$d' "$PLUGIN_FILE")
@@ -322,7 +321,7 @@ done
 
 if [ "$#" -eq 0 ]
 then
-	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 0 ]
+	if [ $SERVIENT_SHOWED_HELP_SCRN -eq 0 ]
 	then
 		print_err "$0: Need to atleast provide a working directory"
 		show_help_screen 
@@ -529,7 +528,6 @@ then
 	SERVIENT_VAL_RES_FILE="$SERVIENT_VAL_TOP_DIR/result.txt"
 fi
 
-call_valid_ps_with_args
 if [ $SERVINET_NO_NPARGS -eq 1 ]
 then
 	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
@@ -548,6 +546,8 @@ then
 			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
 			if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
 			then
+			#	servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR" 
+			# SERVIENT_VAL_UINFOS_FOR_QID SERVIENT_VAL_MATCHS_FOR_QID SERVIENT_VAL_PRETESTS_FOR_QID SERVIENT_VAL_POSTTESTS_FOR_QID
 				FILES=`find "$DIR" -name "*" -type f`
 				for FILE in $FILES
 				do
@@ -850,25 +850,25 @@ else
 fi
 
 ##########################Function:servient_plugin_finder########################################################
-#Purpose:Loads scripts at runtime to dynamically modify the behaviour of servient at runtime.			#
-#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity		#
+#Purpose:Loads scripts at runtime to dynamically modify the behavior of servient at runtime.										#
+#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity					#
 #Argument2: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
-#	    a directory.											#
-#Argument3: Type of behaviour to overload: Mandatory and case sensetive. Constained to be a valid choice from	#
-#	    the list given below: 										#
-#	     TODO: PUT LIST											#
+#	    a directory.																																															#
+#Argument3: Type of behaviour to overload: Mandatory and case sensitive. Constrained to be a valid choice from		#
+#	    the list given below: 																																										#
+#	     TODO: PUT LIST																																														#
 #Argument4: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
-#	     to a file or directory.										#
+#	     to a file or directory.																																									#
 #Argument5: Prospective solution Directory path: Optional and can be null. If present should be an absolute path#
-#	    that points to a file or directory									#
-#Returns: The value depends mainly on argument 3								#
-#	  TODO: TBD												#
+#	    that points to a file or directory																																				#
+#Returns: The value depends mainly on argument 3																																#
+#	  TODO: TBD																																																		#
 #Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
-#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.	#
-#	Any script selected by this function can force default behaviour for the behaviour it was supposed to	#
-#		modify  by returning a non zero integer value							#
-#	This function should only be called if run time plugin selection was asked for, hence meta directory	#
-#		will be set and should be valid.								#
+#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.										#
+#	Any script selected by this function can force default behavior for the behavior it was supposed to					#
+#		modify  by returning a non zero integer value																																#
+#	This function should only be called if run time plugin selection was asked for, hence meta directory					#
+#		will be set and should be valid.																																						#
 #################################################################################################################
 
 servient_plugin_finder()
@@ -890,6 +890,17 @@ servient_plugin_finder()
 	then
                 servient_print_err_fatal "$FUNC_NAME-Mandatory argument Reference path not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
 	fi
+	SERVIENT_VAL="$3"
+	case "$SERVIENT_VAL" in
+		PLGN_MDSLCT_DRYRUN)
+				;;
+		PLGN_MDSLCT_ALL)
+				;;
+		*)
+					print_err_verblvl "[$FUNC_NAME] Passed invalid mode selection string $SERVIENT_VAL" 4
+					return 0
+					;;
+	esac
 	SERVIENT_VAL="$1"
 	servient_is_valid_qid_syntax "$SERVIENT_VAL"
 	TEMP1=$?
@@ -960,7 +971,7 @@ servient_plugin_finder()
 			then
 				SERVIENT_VAL_UINFOS_FOR_QID="$2"/"$SERVIENT_PLGN_UINFO_EXE"
 			else
-				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFO_FOR_QID assigned value multiple times"
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_UINFOS_FOR_QID assigned value multiple times"
 			fi
 		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_EXE does not have executable bit" 3
@@ -1078,19 +1089,18 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
 		fi
 	fi
-	SERVIENT_VAL="$3"
 	case "$SERVIENT_VAL" in
-		PLGN_MDSLCT_ALL)
+		PLGN_MDSLCT_DRYRUN)
 				if [ $SERVIENT_VAL_DRYRUN -ne 1 ]
 				then
-					print_err "[$FUNC_NAME:$SERVIENT_VAL], is only available if you enable debug mode" 
+					print_err "[$FUNC_NAME:$SERVIENT_VAL], is only available if in dryrun mode" 
 					return 0
 				else
 					print_err_verblvl "[$FUNC_NAME] Got $1 as QID" 2
 					print_err_verblvl "[$FUNC_NAME] Got $2 as Meta Directory path" 2
 					print_err_verblvl "[$FUNC_NAME] Got $4 as Reference Solution path" 2
 					print_err_verblvl "[$FUNC_NAME] Got $5 as Prospective Solution path" 2
-					print_err_verblvl "[$FUNC_NAME] UINFO Script for $1 is $SERVIENT_VAL_UINFO_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] UINFO Script for $1 is $SERVIENT_VAL_UINFOS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] MATCH Script for $1 is $SERVIENT_VAL_MATCHS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] PRETEST Script for $1 is $SERVIENT_VAL_PRETESTS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] POSTTEST Script for $1 is $SERVIENT_VAL_POSTTESTS_FOR_QID"
