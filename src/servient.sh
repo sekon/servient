@@ -546,21 +546,49 @@ then
 			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
 			if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
 			then
-			#	servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR" 
+				servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR" 
 			# SERVIENT_VAL_UINFOS_FOR_QID SERVIENT_VAL_MATCHS_FOR_QID SERVIENT_VAL_PRETESTS_FOR_QID SERVIENT_VAL_POSTTESTS_FOR_QID
+				USER_ID=$SERVIENT_VAL_UINFOS_FOR_QID
 				FILES=`find "$DIR" -name "*" -type f`
 				for FILE in $FILES
 				do
-					FILE_NAME=`echo "$FILE" |awk -F "/" '{print $NF;}'`
-					FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
-					if [ -e "$SERVIENT_VAL_REF/$FILE_NAME" ]
+					FILE_NAME_REF=`echo "$FILE" |awk -F "/" '{print $NF;}'`
+					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
+					if [ ! -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 					then
+						FILE_NAME_REF=echo "$SERVIENT_VAL_MATCHS_FOR_QID" | awk -F ",," '{print $1}'
+						servient_is_valid_ref_sol_path "$FILE_NAME_REF"
+						TEMP=$?
+						if [ $TEMP -eq 0 ]
+						then 
+							servient_print_err_fatal " [ $FILE_NAME_REF ] as given by match script is not a valid reference solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi  
+					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
+					else
+						$FILE_NAME_REF="$SERVIENT_VAL_REF/$FILE_NAME_REF"
+						$FILE_PART_REF="$SERVIENT_VAL_REF/$FILE_PART_REF"
+					fi
+					if [ ! -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+					then
+						FILE_NAME_PROS=echo "$SERVIENT_VAL_MATCHS_FOR_QID" | awk -F ",," '{print $2}'
+						servient_is_valid_ref_sol_path "$FILE_NAME_PROS"
+						TEMP=$?
+						if [ $TEMP -eq 0 ]
+						then 
+							servient_print_err_fatal " [ $FILE_NAME_PROS ] as given by match script is not a valid prospective solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
+						fi  
+					else
+						FILE_NAME_PROS="$DIR/$FILE_NAME"
+					fi
+					if [ -e "$FILE_NAME_REF" ]
+					then
+						## $FILE_NAME_PROS is what is used to validate $FILE_NAME_REF as a reference script.
 						REF_OP=""
 						OUR_OP=""
-						if [ -e "$SERVIENT_VAL_REF/$FILE_PART.args" ]
+						if [ -e "$FILE_PART_REF.args" ]
 						then
 							VALID_ANSWER=0
-							exec<"$SERVIENT_VAL_REF/$FILE_PART.args"
+							exec<"$FILE_PART_REF.args"
 							while read line
 							do
 								if [ -f op_ref ]
@@ -571,31 +599,15 @@ then
 								then
 									echo "" > op_our
 								fi
-								"$SERVIENT_VAL_REF/$FILE_NAME" $line > op_ref &
+								"$FILE_NAME_REF" $line > op_ref &
 								REF_PID=$!
-								"$DIR/$FILE_NAME" $line > op_our 
+								"$FILE_NAME_PROS" $line > op_our 
 								OUR_PID=$!
 								if [ -z "$SERVIENT_VAL_DELAY" ]	
 								then
 									sleep 2	
 								else
 									sleep $SERVIENT_VAL_DELAY	
-								fi
-								if [ -z $REF_PID ]
-								then
-									if (( $VERBOSE_OUTPUT ))
-									then
-										print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
-									fi
-									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-								fi
-								if [ -z $OUR_PID ]
-								then
-									if (( $VERBOSE_OUTPUT ))
-									then
-										print_screen "Problem running script $DIR/$FILE_NAME"
-									fi
-									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 								fi
 								IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
 								IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS="$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
@@ -606,6 +618,24 @@ then
 								if (( $IS_OUR_RUNNING ))
 								then
 									kill -s SIGKILL $OUR_PID
+								fi
+								REF_PID=wait $REF_PID
+								OUR_PID=wait $OUR_PID
+								if [ $REF_PID -eq 126 -o $REF_PID -eq 127 ]
+								then
+									if (( $VERBOSE_OUTPUT ))
+									then
+										print_screen "Problem running script $FILE_NAME_REF"
+									fi
+									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+								fi
+								if [ $OUR_PID -eq 126 -o $OUR_PID -eq 127 ]
+								then
+									if (( $VERBOSE_OUTPUT ))
+									then
+										print_screen "Problem running script $FILE_NAME_PROS"
+									fi
+									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 								fi
 								REF_OP=`cat op_ref`
 								OUR_OP=`cat op_our`
@@ -640,6 +670,7 @@ then
 								SCORE=$(( $SCORE + 1 ))
 							fi
 						else
+							## no args
 							if [ -f op_ref ]
 							then
 								echo "" > op_ref
@@ -648,31 +679,15 @@ then
 							then
 								echo "" > op_our
 							fi
-							"$SERVIENT_VAL_REF/$FILE_NAME" > op_ref &
+							"$FILE_NAME_REF" > op_ref &
 							REF_PID=$!
-							"$DIR/$FILE_NAME" > op_our &
+							"$FILE_NAME_PROS" > op_our &
 							OUR_PID=$!
 							if [ -z "$SERVIENT_VAL_DELAY" ]	
 							then
 								sleep 2	
 							else
 								sleep $SERVIENT_VAL_DELAY	
-							fi
-							if [ -z $REF_PID ]
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen "Problem running script $SERVIENT_VAL_REF/$FILE_NAME"
-								fi
-								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-							fi
-							if [ -z $OUR_PID ]
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen " Problem running script $DIR/$FILE_NAME"
-								fi
-								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
 							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID	)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
 							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
@@ -683,6 +698,24 @@ then
 							if (( $IS_OUR_RUNNING ))
 							then
 								kill -s SIGKILL $OUR_PID
+							fi
+							REF_PID=wait $REF_PID
+							OUR_PID=wait $OUR_PID
+							if [ $REF_PID -eq 126 -o $REF_PID -eq 127 ]
+							then
+								if (( $VERBOSE_OUTPUT ))
+								then
+									print_screen "Problem running script $FILE_NAME_REF"
+								fi
+								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+							fi
+							if [ $OUR_PID -eq 126 -o $OUR_PID -eq 127 ]
+							then
+								if (( $VERBOSE_OUTPUT ))
+								then
+									print_screen "Problem running script $FILE_NAME_PROS"
+								fi
+								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
 							fi
 							REF_OP=`cat op_ref`
 							OUR_OP=`cat op_our`
@@ -735,6 +768,7 @@ elif [ $SERVINET_NO_NPARGS -eq 2 ]
 then
 	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
 	## Means we are mostly testing files.
+## Non batch mode .. todo
 	rm -f "$SOLUTION_SCRIPTS_DIR_NAME"/"$REPORT_FILE" 
 	find "$SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
 	if ( [ "$SOLUTION_SCRIPTS_DIR_NAME" != "$REFERENCE_SCRIPTS_DIR_NAME" ] )  
@@ -1011,7 +1045,7 @@ servient_plugin_finder()
 		then
 			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 			then
-				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE"
+				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ## TODO returns 2 comma separated list of files for both reference and perspective solution 
 			else
 				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
 			fi
