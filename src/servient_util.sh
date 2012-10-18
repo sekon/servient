@@ -11,7 +11,7 @@ SERVIENT_SHOWED_HELP_SCRN=0
 SERVIENT_SUCCESS=0
 SERVIENT_VERSION_NUMBER="0.4a"
 SERVIENT_NON_POSITIONAL_ARGS=""
-SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay 
+SERVIENT_OPTION_STRING=":-:d:Df:hm:r:R:s:u:" # TODO: Add time delay
 SERVIENT_LONG_OPTION_STRING="verbose dryrun help"
 SERVIENT_verbose_is_set=0
 SERVIENT_dryrun_is_set=0
@@ -59,7 +59,7 @@ fi
 call_valid_ps_with_args()
 {
 	SERVIENT_PS_COMMAND_ARGS="ps aux"
-	$SERVIENT_PS_COMMAND_ARGS 2>/dev/null 1>/dev/null 
+	$SERVIENT_PS_COMMAND_ARGS 2>/dev/null 1>/dev/null
 	PS_STATUS=$?
 	if [ $PS_STATUS -eq 1 ]
 	then
@@ -136,7 +136,7 @@ servient_print_err_fatal()
 print_err_verblvl()
 {
 	#TODO
-	#TODO use servient_is_valid_pstv_ntrl_num here 
+	#TODO use servient_is_valid_pstv_ntrl_num here
 	echo "$1" >&2
 }
 
@@ -199,7 +199,7 @@ servient_check_all_longOpts()
 		fi
 		shift `expr $OPTIND - 1`
 		echo "$@"
-		exit $ERVIENT_SUCCESS 
+		exit $ERVIENT_SUCCESS
 	fi
 	exit $ERVIENT_SUCCESS
 }
@@ -258,10 +258,10 @@ servient_is_path_absolute()
 {
 	absolute=0
 	if [ ! -z "$1" ]
-	then   
+	then
 		#Function returns 1 if path is absolute else 0
 		if echo $1 | grep '^/' > /dev/null
-		then   
+		then
 			absolute=1
 		fi
 	fi
@@ -282,11 +282,11 @@ servient_get_dirname_from_absolute_path()
 		servient_is_path_absolute "$1"
 		TEMP=$?
 		if [ $TEMP -eq 0 ]
-		then   
+		then
 				print_err_verblvl "[$FUNC_NAME:$1], is not an abosolute path" 5
 		fi
 		TEMP=`echo "$1" |awk -F "/"  '{ for (i = 1; i < NF; i++) {printf $i"/"} print ""; }'`
-		if [ -d "$TEMP" ] 
+		if [ -d "$TEMP" ]
 		then
 			echo "$TEMP"
 		fi
@@ -308,7 +308,7 @@ servient_get_fname_from_absolute_path()
 		servient_is_path_absolute "$1"
 		TEMP=$?
 		if [ $TEMP -eq 0 ]
-		then   
+		then
 				print_err_verblvl "[$FUNC_NAME:$1], is not an abosolute path" 5
 		fi
 		TEMP=`echo "$1" |awk -F "/" '{print $NF;}'`
@@ -331,7 +331,7 @@ servient_get_qid_from_absolute_path()
 		servient_is_path_absolute "$1"
 		TEMP=$?
 		if [ $TEMP -eq 0 ]
-		then   
+		then
 				print_err_verblvl "[$FUNC_NAME:$1], is not an abosolute path" 5
 		fi
 		TEMP=$(servient_get_fname_from_absolute_path $1)
@@ -383,7 +383,7 @@ servient_is_valid_delay_val()
 }
 ########################## Function: servient_is_valid_uinfo_file ###############################################
 #Purpose: Returns numerical 1, if Argument1 is a valid value for user info file, 0 otherwise.			#
-#Argument1: Proposed user info file:Mandatory and constrained to be non-null and not contain forward slashes	# 
+#Argument1: Proposed user info file:Mandatory and constrained to be non-null and not contain forward slashes	#
 #		(its relative to each solution directory)							#
 #Notes: Returns 0 if Argument1 is null.										#
 #	Function only validates Argument1, and does not actually store Argument1				#
@@ -400,7 +400,7 @@ servient_is_valid_uinfo_file()
 			then
 				return 0
 			else
-				return 1	
+				return 1
 			fi
 		fi
 	fi
@@ -408,7 +408,7 @@ servient_is_valid_uinfo_file()
 }
 ########################## Function: servient_is_valid_meta_dir #################################################
 #Purpose: Returns numerical 1, if Argument1 is a valid value for meta directory, 0 otherwise.			#
-#Argument1: Proposed Path to meta directory :Mandatory and constrained to be non-null, an absolute path to a 	# 
+#Argument1: Proposed Path to meta directory :Mandatory and constrained to be non-null, an absolute path to a 	#
 #		directory											#
 #Notes: Returns 0 if Argument1 is null.										#
 #	Function only validates Argument1, and does not actually store Argument1				#
@@ -418,7 +418,7 @@ servient_is_valid_meta_dir()
 	if [ ! -z "$1" ]
 	then
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		servient_is_path_absolute "$SERVIENT_VAL" 
+		servient_is_path_absolute "$SERVIENT_VAL"
 		TEMP1=$?
 		if [ $TEMP1 -eq 0 ]
 		then
@@ -444,13 +444,13 @@ servient_is_valid_ref_sol_path()
 	if [ ! -z "$1" ]
 	then
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		servient_is_path_absolute "$SERVIENT_VAL" 
+		servient_is_path_absolute "$SERVIENT_VAL"
 		TEMP1=$?
 		if [ $TEMP1 -eq 0 ]
 		then
 			return 0
 		fi
-		if [ $TEMP1 -eq 1 ] 
+		if [ $TEMP1 -eq 1 ]
 		then
 			if [ -d "$SERVIENT_VAL" -o -f "$SERVIENT_VAL" ]
 			then
@@ -477,13 +477,13 @@ servient_is_valid_result_file()
 	if [ ! -z "$1" ]
 	then
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		servient_is_path_absolute "$SERVIENT_VAL" 
+		servient_is_path_absolute "$SERVIENT_VAL"
 		TEMP1=$?
 		if [ $TEMP1 -eq 0 ]
 		then
 			return 0
 		fi
-		if [ $TEMP1 -eq 1 ] 
+		if [ $TEMP1 -eq 1 ]
 		then
 			if [  -f "$SERVIENT_VAL" ]
 			then
@@ -491,7 +491,7 @@ servient_is_valid_result_file()
 			else
 				return 0
 			fi
-		fi		
+		fi
 		ERROR_STRING=`touch "$SERVIENT_VAL" 2>&1`
 		TEMP1=$?
 		if [ $TEMP1 -ne 0 ]
@@ -524,8 +524,8 @@ servient_is_valid_uinfo_str()
 		then
 			return 0
 		fi
-		SERVIENT_VAL=`echo "$SERVIENT_VAL"|sed 's/^[ \t]*//;s/[ \t]*$//'` 
-		SERVIENT_VAL_ERROR=`eval "$SERVIENT_VAL" 2>&1` 
+		SERVIENT_VAL=`echo "$SERVIENT_VAL"|sed 's/^[ \t]*//;s/[ \t]*$//'`
+		SERVIENT_VAL_ERROR=`eval "$SERVIENT_VAL" 2>&1`
 		TEMP1=$?
 		if [ $TEMP1 -ne 0 ]
 		then
@@ -555,7 +555,7 @@ servient_is_valid_qid_syntax()
 	then
 		TEMP1=0
 		SERVIENT_VAL=`echo "$1"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		case "$SERVIENT_VAL" in	
+		case "$SERVIENT_VAL" in
 		[a-z]*) TEMP1=1 ;;
 		[A-Z]*) TEMP1=1 ;;
 		esac
@@ -563,7 +563,7 @@ servient_is_valid_qid_syntax()
 		if [ ! -z "$SERVIENT_VAL" ]
 		then
 			TEMP1=0
-		fi	
+		fi
 		return $TEMP1
 	fi
 	return 0

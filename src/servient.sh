@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 #################################################################################################
 #Purpose: <To be done>										#
 #Primary Author: Harish Badrinath < harish [at] fossee.in>					#
@@ -18,7 +18,7 @@ SERVIENT_INSTALL_DIR=`dirname $0` ## TODO :: Make the install script change this
 # even if $PLUGIN_FILE redefines/rewrites variables .. it wont be seen here even when the script is being sourced.
 
 
-get_user_id () 
+get_user_id ()
 {
 	## TODO Clean this up .. really needs to be done more elegantly
 	if [ -f "$SERVIENT_VAL_UINFO_FILE" ]
@@ -35,12 +35,12 @@ get_user_id ()
 			fi
 			exit 205 ## TODO use exit, with more consistency with the rest of document.
 		else
-			echo "$MY_UID"	
+			echo "$MY_UID"
 		fi
 	else
 		echo -n ""
 	fi
-} 
+}
 ########################## Function: is_path_absolute ###########################################################
 #Purpose: Returns numerical 1, if the first argument passed to the function is 	an absolute path 0 otherwise.	#
 #Arguments: 1, The path string to be tested to see if it is an absolute path.					#
@@ -123,7 +123,7 @@ servient_process_arguments()
 							if [ $# -eq 1 ]
 							then
 								show_help_screen
-								SERVIENT_SHOWED_HELP_SCRN=1	
+								SERVIENT_SHOWED_HELP_SCRN=1
 								exit $SERVIENT_SUCCESS
 							else
 								servient_print_err_fatal "Option ${OPTARG} needs to be the only argument" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -148,7 +148,7 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal "[ $opt ] was given [ $OPTARG] as delay, it should be a postive number and should contain only positive natural numbers" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_delay_is_set=1
 						SERVIENT_VAL_DELAY=$OPTARG
 					fi
@@ -175,7 +175,7 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ] as userinfo filename, It must not contains \"/\", as i refers to a file in each directory of interest" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_uinfo_file_is_set=1
 						SERVIENT_VAL_UINFO_FILE="$OPTARG" ## TODO: This should only be file names for all cases, but cant be checked now 
 					fi
@@ -189,7 +189,7 @@ servient_process_arguments()
 					if [ $# -eq 1 ]
 					then
 						show_help_screen
-						SERVIENT_SHOWED_HELP_SCRN=1	
+						SERVIENT_SHOWED_HELP_SCRN=1
 						exit $SERVIENT_SUCCESS
 					else
 						print_err "Option ${OPTARG} needs to be the only argument"
@@ -205,9 +205,9 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as meta directory. It should be a valid directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_meta_dir_is_set=1
-						SERVIENT_VAL_META_DIR="$OPTARG"	
+						SERVIENT_VAL_META_DIR="$OPTARG"
 					fi
 				else
 					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -221,9 +221,9 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as reference path. It should etiher be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_ref_path_is_set=1
-						SERVIENT_VAL_REF="$OPTARG"	
+						SERVIENT_VAL_REF="$OPTARG"
 					fi
 				else
 					servient_print_err_fatal "More than one instance of $opt given during invocation" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
@@ -237,7 +237,7 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ], as result file. It should be an absolute path and should point to a file" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_result_file_is_set=1
 						SERVIENT_VAL_RES_FILE="$OPTARG"
 					fi
@@ -253,7 +253,7 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as prospective solution path. It should etiher be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_sol_path_is_set=1
 						SERVIENT_VAL_SOL="$OPTARG"
 					fi
@@ -269,7 +269,7 @@ servient_process_arguments()
 					if [ $TEMP -eq 0 ]
 					then
 						servient_print_err_fatal " [ $opt ] was given [ $OPTARG ]  as userinfo extraction shell script snippet. It cannot be executed as given, independetly in the current environment"  $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-					else 	
+					else
 						SERVIENT_uinfo_string_is_set=1
 						SERVIENT_VAL_UINFO_STRING="$OPTARG"
 					fi
@@ -324,7 +324,7 @@ then
 	if [ $SERVIENT_SHOWED_HELP_SCRN -eq 0 ]
 	then
 		print_err "$0: Need to atleast provide a working directory"
-		show_help_screen 
+		show_help_screen
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	else
 		exit $SERVIENT_SUCCESS
@@ -341,20 +341,20 @@ SERVINET_NO_NPARGS=$TEMP
 if [ "$SERVINET_NO_NPARGS" -gt 2 ]
 then
 	print_err "$0: Can have atmost two mandatory arguments"
-	show_help_screen 
+	show_help_screen
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 if [ "$SERVINET_NO_NPARGS" -eq 1 ]
 then
 	SERVIENT_NON_POSITIONAL_ARGS=`echo "$SERVIENT_NON_POSITIONAL_ARGS"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS" 
+	is_path_absolute "$SERVIENT_NON_POSITIONAL_ARGS"
 	TEMP1=$?
 	if [ $TEMP1 -eq 0 ]
 	then
 		print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ] should be a directory and an absolute path" 
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG  ## ## *Dont* use brackets around exit
 	fi
-	if [ $TEMP1 -eq 1 -a ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ] 
+	if [ $TEMP1 -eq 1 -a ! -d "$SERVIENT_NON_POSITIONAL_ARGS" ]
 	then
 			print_err "[ $SERVIENT_NON_POSITIONAL_ARGS ] should be a directory and an absolute path" 
 			exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
@@ -376,7 +376,7 @@ then
 	servient_is_set_opt_ref_path
 	TEMP=$?
 	servient_is_set_pros_sol_path
-	TEMP1=$?	
+	TEMP1=$?
 	if [ $TEMP -eq 1 -o $TEMP1 -eq 1 ]
 	then
 		print_err "$0: Can't provide reference directory and/or prospective solution directory as both positional and non positional arguments"
@@ -387,9 +387,8 @@ then
 	TEMP=0
 	for SERVINET_NPARG in $SERVIENT_NON_POSITIONAL_ARGS
 	do
-		
 		SERVINET_NPARG=`echo "$SERVINET_NPARG"|sed 's/^[ \t]*//;s/[ \t]*$//'`
-		is_path_absolute "SERVINET_NPARG" 
+		is_path_absolute "SERVINET_NPARG"
 		TEMP1=$?
 		if [ $TEMP1 -eq 0 ]
 		then
@@ -400,7 +399,6 @@ then
 		then
 			if [ ! -f "$SERVINET_NPARG" -a ! -d "$SERVINET_NPARG" ]
 			then
-				
 				print_err "[ $SERVINET_NPARG ] should be a directory or a file and an absolute path" 
 				exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG ## ## *Dont* use brackets around exit
 			fi
@@ -423,11 +421,11 @@ then
 		fi
 		if [ $TEMP -eq 0 ]
 		then
-			SERVIENT_VAL_SOL="$SERVINET_NPARG"	
+			SERVIENT_VAL_SOL="$SERVINET_NPARG"
 		elif [ $TEMP -eq 1 ]
 		then
 			SERVIENT_VAL_REF="$SERVINET_NPARG"
-		fi	
+		fi
 		TEMP=`expr $TEMP + 1`
 	done
 	if [ -d "$SERVIENT_VAL_SOL" ]
@@ -437,29 +435,28 @@ then
 else
 	if [ $SERVIENT_SHOWED_HELP_SCRN -ne 0 ]
 	then
-		show_help_screen 
+		show_help_screen
 		exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 	else
 		exit $SERVIENT_SUCCESS
 	fi
-	
 fi
 ## When both SERVIENT_VAL_REF and SERVIENT_VAL_SOL are both
 ## Directories, it is taken care of below as it is the most
 ## eloberate.
 if [ -f "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
-	print_screen "Two files"	
+	print_screen "Two files"
 	#TODO
 fi
 if [ -d "$SERVIENT_VAL_REF" -a -f "$SERVIENT_VAL_SOL" ]
 then
-	print_screen "First Directory second file"	
+	print_screen "First Directory second file"
 	#TODO
 fi
 if [ -f "$SERVIENT_VAL_REF" -a -d "$SERVIENT_VAL_SOL" ]
 then
-	print_screen "(This is invalid)First file second directory"	
+	print_screen "(This is invalid)First file second directory"
 	#TODO
 fi
 #if [ $IS_ROOT -eq 0 ] ## TODO Think this over
@@ -467,13 +464,13 @@ fi
 #	echo "Initially this script needs root previlages."
 #	echo "It will later drop previlages to specifed user/nobody"
 #	exit $SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT
-#fi		
+#fi
 
 if [ -z "$SERVIENT_VAL_TOP_DIR" ]
 then
 	#TODO: This can be null if SERVIENT_VAL_SOL is not a directory.
 	print_err "[CONFIG-ERROR] Variable SERVIENT_VAL_TOP_DIR cant be null"
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG 
+	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 
 if [ -z "$SERVIENT_VAL_REF" ]
@@ -536,34 +533,34 @@ then
 	rm -f "$SERVIENT_VAL_RES_FILE"
 	for DIR in $DIR_LIST
 	do
-		DIR=`echo $DIR| sed 's/^\.\///'`;	
-		if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] ) 
+		DIR=`echo $DIR| sed 's/^\.\///'`;
+		if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] )
 		then
 			# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
 			MAGIC_STRING="" ## TODO: see TODO
 			SCORE=0
 			USER_ID=$(get_user_id)
-			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking 
+			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking
 			if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
 			then
-				servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR" 
+				servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR"
 			# SERVIENT_VAL_UINFOS_FOR_QID SERVIENT_VAL_MATCHS_FOR_QID SERVIENT_VAL_PRETESTS_FOR_QID SERVIENT_VAL_POSTTESTS_FOR_QID
 				USER_ID=$SERVIENT_VAL_UINFOS_FOR_QID
 				FILES=`find "$DIR" -name "*" -type f`
 				for FILE in $FILES
 				do
 					FILE_NAME_REF=`echo "$FILE" |awk -F "/" '{print $NF;}'`
-					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
+					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
 					if [ ! -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 					then
 						FILE_NAME_REF=echo "$SERVIENT_VAL_MATCHS_FOR_QID" | awk -F ",," '{print $1}'
 						servient_is_valid_ref_sol_path "$FILE_NAME_REF"
 						TEMP=$?
 						if [ $TEMP -eq 0 ]
-						then 
+						then
 							servient_print_err_fatal " [ $FILE_NAME_REF ] as given by match script is not a valid reference solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-						fi  
-					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'` 
+						fi
+					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
 					else
 						$FILE_NAME_REF="$SERVIENT_VAL_REF/$FILE_NAME_REF"
 						$FILE_PART_REF="$SERVIENT_VAL_REF/$FILE_PART_REF"
@@ -574,9 +571,9 @@ then
 						servient_is_valid_ref_sol_path "$FILE_NAME_PROS"
 						TEMP=$?
 						if [ $TEMP -eq 0 ]
-						then 
+						then
 							servient_print_err_fatal " [ $FILE_NAME_PROS ] as given by match script is not a valid prospective solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-						fi  
+						fi
 					else
 						FILE_NAME_PROS="$DIR/$FILE_NAME"
 					fi
@@ -601,13 +598,13 @@ then
 								fi
 								"$FILE_NAME_REF" $line > op_ref &
 								REF_PID=$!
-								"$FILE_NAME_PROS" $line > op_our 
+								"$FILE_NAME_PROS" $line > op_our
 								OUR_PID=$!
-								if [ -z "$SERVIENT_VAL_DELAY" ]	
+								if [ -z "$SERVIENT_VAL_DELAY" ]
 								then
-									sleep 2	
+									sleep 2
 								else
-									sleep $SERVIENT_VAL_DELAY	
+									sleep $SERVIENT_VAL_DELAY
 								fi
 								IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
 								IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS="$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
@@ -647,7 +644,7 @@ then
 								then
 									if [ "$REF_OP" = "$OUR_OP" ]
 									then
-										VALID_ANSWER=1	
+										VALID_ANSWER=1
 									else
 										if (( $VERBOSE_OUTPUT ))
 										then
@@ -683,11 +680,11 @@ then
 							REF_PID=$!
 							"$FILE_NAME_PROS" > op_our &
 							OUR_PID=$!
-							if [ -z "$SERVIENT_VAL_DELAY" ]	
+							if [ -z "$SERVIENT_VAL_DELAY" ]
 							then
-								sleep 2	
+								sleep 2
 							else
-								sleep $SERVIENT_VAL_DELAY	
+								sleep $SERVIENT_VAL_DELAY
 							fi
 							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID	)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
 							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
@@ -755,7 +752,7 @@ then
 				cd $PARENT_DIR
 			fi
 		fi
-	done	
+	done
 	if [ -f op_ref ]
 	then
 		rm -f op_ref
@@ -769,15 +766,15 @@ then
 	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
 	## Means we are mostly testing files.
 ## Non batch mode .. todo
-	rm -f "$SOLUTION_SCRIPTS_DIR_NAME"/"$REPORT_FILE" 
+	rm -f "$SOLUTION_SCRIPTS_DIR_NAME"/"$REPORT_FILE"
 	find "$SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
-	if ( [ "$SOLUTION_SCRIPTS_DIR_NAME" != "$REFERENCE_SCRIPTS_DIR_NAME" ] )  
+	if ( [ "$SOLUTION_SCRIPTS_DIR_NAME" != "$REFERENCE_SCRIPTS_DIR_NAME" ] )
 	then
 		DIR=`echo "$SOLUTION_SCRIPTS_DIR_NAME"|awk -F "/" '{ print $NF; }'` # DIR contains the last part of the SOL script name, used to user_info.txt thing
 		MAGIC_STRING=""
 		SCORE=0
 		USER_ID=$(get_user_id)
-		if [ -z "$USER_ID"  ] 
+		if [ -z "$USER_ID"  ]
 		then
 			USER_ID=$DIR #TODO: TAKE LAST PART OF SOL_DIR PATH
 		fi
@@ -802,18 +799,18 @@ then
 						sed -i '/exec\(.*\)\;/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
 						let TEMP-=1
 					done
-					sed -i '/^\(errcatch.-1,.stop..\)/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" 
+					sed -i '/^\(errcatch.-1,.stop..\)/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
 					export STUDENT_FILE="$SOLUTION_SCRIPTS_DIR_NAME/$FILE_NAME"
 					perl -pi -e 'print "exec $ENV{\"STUDENT_FILE\"};\n" if $. == 1' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
 					perl -pi -e "print \"errcatch(-1,\'stop\');\n\" if $. == 1" "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
 					sed -i 's/\(disp(.*)\)/\/\/\1/' "$FILE" ## XXX: Was FILE_NAME
 					scilab -nb -nwni -f "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"  > "$SOLUTION_SCRIPTS_DIR_NAME/OP" &
 					REF_PID=$!
-					if [ -z "$SCRIPT_DELAY" ]	
+					if [ -z "$SCRIPT_DELAY" ]
 					then
-						sleep 2	
+						sleep 2
 					else
-						sleep $SCRIPT_DELAY	
+						sleep $SCRIPT_DELAY
 					fi
 					if [ -z $REF_PID ]
 					then
@@ -828,12 +825,12 @@ then
 					then
 						kill -s SIGKILL $REF_PID
 					fi
-					### 
+					###
 					sed -i -e 's/[\t ]//g;/^$/d' "$SOLUTION_SCRIPTS_DIR_NAME/OP"
 					TEMP=0
 					##Temp=0, for the first iteration of the loop only
 					while read line
-					do 
+					do
 						if ( [ "$line" = "T" ] && ( (( $VALID_ANSWER )) || (( ! $TEMP )) ) )
 						then
 							VALID_ANSWER=1
@@ -841,7 +838,7 @@ then
 							VALID_ANSWER=0
 						fi
 						let TEMP+=1
-					done < "$SOLUTION_SCRIPTS_DIR_NAME/OP" 
+					done < "$SOLUTION_SCRIPTS_DIR_NAME/OP"
 					####
 					if (( $VALID_ANSWER ))
 					then
@@ -877,43 +874,43 @@ then
 	fi
 	find "$	SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
 else
-	print_err "Unkown condition encountered" 
+	print_err "Unkown condition encountered"
 	print_err " If you believe this is an error, please consider filing a bug report"
 	show_help_screen
 	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
 fi
 
 ##########################Function:servient_plugin_finder########################################################
-#Purpose:Loads scripts at runtime to dynamically modify the behavior of servient at runtime.										#
-#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity					#
+#Purpose:Loads scripts at runtime to dynamically modify the behavior of servient at runtime.			#
+#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity		#
 #Argument2: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
-#	    a directory.																																															#
-#Argument3: Type of behaviour to overload: Mandatory and case sensitive. Constrained to be a valid choice from		#
-#	    the list given below: 																																										#
-#	     TODO: PUT LIST																																														#
+#	    a directory.											#
+#Argument3: Type of behaviour to overload: Mandatory and case sensitive. Constrained to be a valid choice from	#
+#	    the list given below:										#
+#	     TODO: PUT LIST											#
 #Argument4: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
-#	     to a file or directory.																																									#
+#	     to a file or directory.										#
 #Argument5: Prospective solution Directory path: Optional and can be null. If present should be an absolute path#
-#	    that points to a file or directory																																				#
-#Returns: The value depends mainly on argument 3																																#
-#	  TODO: TBD																																																		#
+#	    that points to a file or directory									#
+#Returns: The value depends mainly on argument 3								#
+#	  TODO: TBD												#
 #Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
-#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.										#
-#	Any script selected by this function can force default behavior for the behavior it was supposed to					#
-#		modify  by returning a non zero integer value																																#
-#	This function should only be called if run time plugin selection was asked for, hence meta directory					#
-#		will be set and should be valid.																																						#
+#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.	#
+#	Any script selected by this function can force default behavior for the behavior it was supposed to	#
+#		modify  by returning a non zero integer value							#
+#	This function should only be called if run time plugin selection was asked for, hence meta directory	#
+#		will be set and should be valid.								#
 #################################################################################################################
 
 servient_plugin_finder()
 {
         FUNC_NAME="servient_plugin_finder"
         if [ -z "$1" ]
-        then   
+        then
                 servient_print_err_fatal "$FUNC_NAME-Mandatory argument QID not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
         fi
         if [ -z "$2" ]
-        then   
+        then
                 servient_print_err_fatal "$FUNC_NAME-Mandatory argument MetaDirectoryPath not given" $SERVIENT_EXIT_ERROR_FUNC_PLGFNDR
         fi
         if [ -z "$3" ]
@@ -978,12 +975,12 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME:$SERVIENT_VAL], does not look like a valid value for Prospective Solution path" 4
 			return 0
 		fi
-	fi	
+	fi
 	SERVIENT_VAL_UINFOS_FOR_QID=""
 	SERVIENT_VAL_MATCHS_FOR_QID=""
 	SERVIENT_VAL_PRETESTS_FOR_QID=""
 	SERVIENT_VAL_POSTTESTS_FOR_QID=""
-	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]		
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
 	then
 		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
 		then
@@ -1045,7 +1042,7 @@ servient_plugin_finder()
 		then
 			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
 			then
-				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ## TODO returns 2 comma separated list of files for both reference and perspective solution 
+				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ## TODO returns 2 comma separated list of files for both reference and perspective solution
 			else
 				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
 			fi
@@ -1119,7 +1116,7 @@ servient_plugin_finder()
 			else
 				print_err "{CRIT-WARN}[$FUNC_NAME]  SERVIENT_VAL_POSTTESTS_FOR_QID assigned value multiple times"
 			fi
-		else	
+		else
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_POSTTEST_EXE does not have executable bit" 3
 		fi
 	fi
@@ -1138,7 +1135,7 @@ servient_plugin_finder()
 					print_err_verblvl "[$FUNC_NAME] MATCH Script for $1 is $SERVIENT_VAL_MATCHS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] PRETEST Script for $1 is $SERVIENT_VAL_PRETESTS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] POSTTEST Script for $1 is $SERVIENT_VAL_POSTTESTS_FOR_QID"
-				fi		
+				fi
 				;;
 	esac
 }

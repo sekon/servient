@@ -1,0 +1,4 @@
+This directory is intended to host files that test the project as a whole.
+Example include 
+(a) Test to check for command needed by servient
+(b) Test to validate a dist tarball

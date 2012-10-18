@@ -10,7 +10,9 @@ dist: mkdir_dist mk_dist_trbll
 	
 mkdir_dist:
 	mkdir -p $(PROJECT_NAME)_$(PROJECT_VERSION)
+	mkdir -p $(PROJECT_NAME)_$(PROJECT_VERSION)/tests
 	cp src/*.sh $(PROJECT_NAME)_$(PROJECT_VERSION)
+	cp -r tests/* $(PROJECT_NAME)_$(PROJECT_VERSION)/tests
 
 mk_dist_trbll:
 	tar -cvzf $(PROJECT_NAME)_$(PROJECT_VERSION).tar.gz $(PROJECT_NAME)_$(PROJECT_VERSION)
