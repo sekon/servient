@@ -596,6 +596,22 @@ then
 								then
 									echo "" > op_our
 								fi
+								if [ ! -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
+								then
+									SERVIENT_VAL_PRETESTS_FOR_QID &
+									PRETEST_QID=$!
+									if [ -z "$SERVIENT_VAL_DELAY" ]
+									then
+										sleep 2
+									else
+										sleep $SERVIENT_VAL_DELAY
+									fi
+									IS_PRETEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$PRETEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+									if (( $IS_PRETEST_RUNNING ))
+									then
+										kill -s SIGKILL $PRETEST_QID
+									fi
+								fi
 								"$FILE_NAME_REF" $line > op_ref &
 								REF_PID=$!
 								"$FILE_NAME_PROS" $line > op_our
@@ -633,6 +649,22 @@ then
 										print_screen "Problem running script $FILE_NAME_PROS"
 									fi
 									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+								fi
+								if [ ! -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
+								then
+									SERVIENT_VAL_POSTTESTS_FOR_QID &
+									POSTEST_QID=$!
+									if [ -z "$SERVIENT_VAL_DELAY" ]
+									then
+										sleep 2
+									else
+										sleep $SERVIENT_VAL_DELAY
+									fi		
+									IS_POSTEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$POSTEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+									if (( $IS_POSTEST_RUNNING ))
+									then
+										kill -s SIGKILL $POSTEST_QID
+									fi
 								fi
 								REF_OP=`cat op_ref`
 								OUR_OP=`cat op_our`
@@ -676,6 +708,22 @@ then
 							then
 								echo "" > op_our
 							fi
+							if [ ! -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
+							then
+								SERVIENT_VAL_PRETESTS_FOR_QID &
+								PRETEST_QID=$!
+								if [ -z "$SERVIENT_VAL_DELAY" ]
+								then
+									sleep 2
+								else
+									sleep $SERVIENT_VAL_DELAY
+								fi
+								IS_PRETEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$PRETEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+								if (( $IS_PRETEST_RUNNING ))
+								then
+									kill -s SIGKILL $PRETEST_QID
+								fi
+							fi
 							"$FILE_NAME_REF" > op_ref &
 							REF_PID=$!
 							"$FILE_NAME_PROS" > op_our &
@@ -713,6 +761,22 @@ then
 									print_screen "Problem running script $FILE_NAME_PROS"
 								fi
 								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
+							fi
+							if [ ! -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
+							then
+								SERVIENT_VAL_POSTTESTS_FOR_QID &
+								POSTEST_QID=$!
+								if [ -z "$SERVIENT_VAL_DELAY" ]
+								then
+									sleep 2
+								else
+									sleep $SERVIENT_VAL_DELAY
+								fi
+								IS_POSTEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$POSTEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
+								if (( $IS_POSTEST_RUNNING ))
+								then
+									kill -s SIGKILL $POSTEST_QID
+								fi
 							fi
 							REF_OP=`cat op_ref`
 							OUR_OP=`cat op_our`
