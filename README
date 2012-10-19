@@ -2,6 +2,10 @@ Hello,
 Thank you for your interest in servient. Hope you find it useful.
 I have tried to keep it as standards compliant as possible. At the very least
 you need a POSIX shell with jobcontrol, which supports redirection.
+The shell also needs to provide the path of the executable in $0 (relative 
+or absolute)
+
+
 I have tested this code primarily on the following Unix shells
 (a) Bash 4.1-3
 (b) Dash 0.5.5.1-7.4

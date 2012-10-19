@@ -551,9 +551,9 @@ then
 				do
 					FILE_NAME_REF=`echo "$FILE" |awk -F "/" '{print $NF;}'`
 					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
-					if [ ! -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+					if [ ! -z "$SERVIENT_VAL_REF_MATCHS_FOR_QID" ]
 					then
-						FILE_NAME_REF=echo "$SERVIENT_VAL_MATCHS_FOR_QID" | awk -F ",," '{print $1}'
+						FILE_NAME_REF=$SERVIENT_VAL_REF_MATCHS_FOR_QID
 						servient_is_valid_ref_sol_path "$FILE_NAME_REF"
 						TEMP=$?
 						if [ $TEMP -eq 0 ]
@@ -565,9 +565,9 @@ then
 						$FILE_NAME_REF="$SERVIENT_VAL_REF/$FILE_NAME_REF"
 						$FILE_PART_REF="$SERVIENT_VAL_REF/$FILE_PART_REF"
 					fi
-					if [ ! -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+					if [ ! -z "$SERVIENT_VAL_PRS_MATCHS_FOR_QID" ]
 					then
-						FILE_NAME_PROS=echo "$SERVIENT_VAL_MATCHS_FOR_QID" | awk -F ",," '{print $2}'
+						FILE_NAME_PROS=$SERVIENT_VAL_PRS_MATCHS_FOR_QID
 						servient_is_valid_ref_sol_path "$FILE_NAME_PROS"
 						TEMP=$?
 						if [ $TEMP -eq 0 ]
@@ -1041,7 +1041,8 @@ servient_plugin_finder()
 		fi
 	fi
 	SERVIENT_VAL_UINFOS_FOR_QID=""
-	SERVIENT_VAL_MATCHS_FOR_QID=""
+	SERVIENT_VAL_PRS_MATCHS_FOR_QID=""
+	SERVIENT_VAL_REF_MATCHS_FOR_QID=""
 	SERVIENT_VAL_PRETESTS_FOR_QID=""
 	SERVIENT_VAL_POSTTESTS_FOR_QID=""
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_UINFO_EXE" ]
@@ -1100,34 +1101,64 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_UINFO_FLNM_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_PRS_EXE" ]
 	then
-		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_MATCH_PRS_EXE" ]
 		then
-			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+			if [ -z "$SERVIENT_VAL_PRS_MATCHS_FOR_QID" ]
 			then
-				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ## TODO returns 2 comma separated list of files for both reference and perspective solution
+				SERVIENT_VAL_PRS_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_PRS_EXE" 
 			else
-				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_PRS_MATCHS_FOR_QID assigned value multiple times"
 			fi
 		else
-			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_PRS_EXE does not have executable bit" 3
 		fi
 	fi
-	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_EXE" ]
+	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_PRS_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_PRS_EXE" ]
 	then
-		if [ -x "$2"/"$SERVIENT_PLGN_MATCH_EXE" ]
+		if [ -x "$2"/"$SERVIENT_PLGN_MATCH_PRS_EXE" ]
 		then
-			if [ -z "$SERVIENT_VAL_MATCHS_FOR_QID" ]
+			if [ -z "$SERVIENT_VAL_PRS_MATCHS_FOR_QID" ]
 			then
-				SERVIENT_VAL_MATCHS_FOR_QID="$2"/"$SERVIENT_PLGN_MATCH_EXE"
+				SERVIENT_VAL_PRS_MATCHS_FOR_QID="$2"/"$SERVIENT_PLGN_MATCH_PRS_EXE"
 			else
-				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_MATCHS_FOR_QID assigned value multiple times"
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_PLGN_MATCH_PRS_EXE assigned value multiple times"
 			fi
 		else
-			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_EXE does not have executable bit" 3
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_PRS_EXE does not have executable bit" 3
 		fi
 	fi
+####
+	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
+	then
+		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_REF_MATCHS_FOR_QID" ]
+			then
+				SERVIENT_VAL_REF_MATCHS_FOR_QID="$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ## TODO returns 2 comma separated list of files for both reference and perspective solution
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_REF_MATCHS_FOR_QID assigned value multiple times"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$1/$SERVIENT_PLGN_MATCH_REF_EXE does not have executable bit" 3
+		fi
+	fi
+	if [ -e "$2"/"$SERVIENT_PLGN_MATCH_REF_EXE" -a ! -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
+	then
+		if [ -x "$2"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
+		then
+			if [ -z "$SERVIENT_VAL_REF_MATCHS_FOR_QID" ]
+			then
+				SERVIENT_VAL_REF_MATCHS_FOR_QID="$2"/"$SERVIENT_PLGN_MATCH_REF_EXE"
+			else
+				print_err "{CRIT-WARN}[$FUNC_NAME] SERVIENT_VAL_REF_MATCHS_FOR_QID assigned value multiple times"
+			fi
+		else
+			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_REF_EXE does not have executable bit" 3
+		fi
+	fi
+####
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
 	then
 		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
@@ -1195,8 +1226,10 @@ servient_plugin_finder()
 					print_err_verblvl "[$FUNC_NAME] Got $2 as Meta Directory path" 2
 					print_err_verblvl "[$FUNC_NAME] Got $4 as Reference Solution path" 2
 					print_err_verblvl "[$FUNC_NAME] Got $5 as Prospective Solution path" 2
+					print_err_verblvl "[$FUNC_NAME] File used to query UINFO for Script $1 is $SERVIENT_VAL_UINFOS_FLNM_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] UINFO Script for $1 is $SERVIENT_VAL_UINFOS_FOR_QID"
-					print_err_verblvl "[$FUNC_NAME] MATCH Script for $1 is $SERVIENT_VAL_MATCHS_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] Prospective solution MATCH Script for QID  $1 is $SERVIENT_VAL_PRS_MATCHS_FOR_QID"
+					print_err_verblvl "[$FUNC_NAME] Reference solution MATCH Script for QID  $1 is $SERVIENT_VAL_REF_MATCHS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] PRETEST Script for $1 is $SERVIENT_VAL_PRETESTS_FOR_QID"
 					print_err_verblvl "[$FUNC_NAME] POSTTEST Script for $1 is $SERVIENT_VAL_POSTTESTS_FOR_QID"
 				fi
