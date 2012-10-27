@@ -1,13 +1,13 @@
 #!/bin/sh
 #################################################################################################
-#Purpose: <To be done>										#
-#Primary Author: Harish Badrinath < harish [at] fossee.in>					#
-#Taken Over date/Creation date: Sun, 06 Nov 2011 21:38:58 +0530					#
-#Taken Over by:											#
-#Taken Over date:										#
-#Date of last commit:Sun, 15 Jul 2012 22:56:52 +0530						#
-#License: GPL V3 +										#
-#Internal Version Number: See $SERVIENT_VERSION_NUMBER 						#
+#Purpose: <To be done>																			#
+#Primary Author: Harish Badrinath < harish [at] fossee.in>										#
+#Taken Over date/Creation date: Sun, 06 Nov 2011 21:38:58 +0530									#
+#Taken Over by:																					#
+#Taken Over date:																				#
+#Date of last commit:Sun, 15 Jul 2012 22:56:52 +0530											#
+#License: GPL V3 +																				#
+#Internal Version Number: See $SERVIENT_VERSION_NUMBER 											#
 #################################################################################################
 
 SERVIENT_INSTALL_DIR=`dirname $0` ## TODO :: Make the install script change this to install location.
@@ -43,8 +43,8 @@ get_user_id ()
 }
 ########################## Function: is_path_absolute ###########################################################
 #Purpose: Returns numerical 1, if the first argument passed to the function is 	an absolute path 0 otherwise.	#
-#Arguments: 1, The path string to be tested to see if it is an absolute path.					#
-#Notes: None													#
+#Arguments: 1, The path string to be tested to see if it is an absolute path.									#
+#Notes: None																									#
 #################################################################################################################
 is_path_absolute()
 {
@@ -68,12 +68,12 @@ then
 fi
 
 ###################################### Function: servient_process_arguments #############################################################################
-#Purpose: Parse Positional parameters and return as soon as a non positional parameter is found.							#
-#Arguments: Depens on how the program/function is invoked.												#
-#Notes: You may need to call this function multiple times if you want to parse argument list that contains a 						#
-#		mixture of positional and non positional arguments.											#
-#	Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.						#
-# and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682		#
+#Purpose: Parse Positional parameters and return as soon as a non positional parameter is found.														#
+#Arguments: Depens on how the program/function is invoked.																								#
+#Notes: You may need to call this function multiple times if you want to parse argument list that contains a 											#
+#		mixture of positional and non positional arguments.																								#
+#	Special thanks to http://wiki.bash-hackers.org/howto/getopts_tutorial, for the awesome tutorial.													#
+# and http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682			#
 #########################################################################################################################################################
 servient_process_arguments()
 {
@@ -459,13 +459,6 @@ then
 	print_screen "(This is invalid)First file second directory"
 	#TODO
 fi
-#if [ $IS_ROOT -eq 0 ] ## TODO Think this over
-#then
-#	echo "Initially this script needs root previlages."
-#	echo "It will later drop previlages to specifed user/nobody"
-#	exit $SERVIENT_EXIT_ERROR_INIT_USER_NOT_ROOT
-#fi
-
 if [ -z "$SERVIENT_VAL_TOP_DIR" ]
 then
 	#TODO: This can be null if SERVIENT_VAL_SOL is not a directory.
@@ -525,447 +518,28 @@ then
 	SERVIENT_VAL_RES_FILE="$SERVIENT_VAL_TOP_DIR/result.txt"
 fi
 
-if [ $SERVINET_NO_NPARGS -eq 1 ]
-then
-	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
-	## Means we are mostly testing files.
-	DIR_LIST=`find "$SERVIENT_VAL_TOP_DIR" -maxdepth 1 -name "*" -type d`
-	rm -f "$SERVIENT_VAL_RES_FILE"
-	for DIR in $DIR_LIST
-	do
-		DIR=`echo $DIR| sed 's/^\.\///'`;
-		if ( [ "$DIR" != "$SERVIENT_VAL_TOP_DIR" ] && [ "$DIR" != "$SERVIENT_VAL_REF" ] && [ "$DIR" != "$SERVIENT_VAL_META_DIR" ] && [ "$DIR" != "." ] && [ "$DIR" != ".." ] )
-		then
-			# XXX $SERVIENT_VAL_META_DIR check needs to be there. It is not always guarenteed to be inside reference script directory.
-			MAGIC_STRING="" ## TODO: see TODO
-			SCORE=0
-			USER_ID=$(get_user_id)
-			## TODO use  type  -t def_foo_bar | grep function | wc -l and do more sane error checking
-			if ( [ ! -z "$USER_ID"  ] || ( [ -z "$SERVIENT_VAL_UINFO_FILE" ] && [ -z "$SERVIENT_VAL_UINFO_STRING" ] ) )
-			then
-				servient_plugin_finder "$USER_ID" "$SERVIENT_VAL_META_DIR" "PLGN_MDSLCT_ALL" "$SERVIENT_VAL_REF" "$DIR"
-			# SERVIENT_VAL_UINFOS_FOR_QID SERVIENT_VAL_MATCHS_FOR_QID SERVIENT_VAL_PRETESTS_FOR_QID SERVIENT_VAL_POSTTESTS_FOR_QID
-				USER_ID=$SERVIENT_VAL_UINFOS_FOR_QID
-				FILES=`find "$DIR" -name "*" -type f`
-				for FILE in $FILES
-				do
-					FILE_NAME_REF=`echo "$FILE" |awk -F "/" '{print $NF;}'`
-					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
-					if [ ! -z "$SERVIENT_VAL_REF_MATCHS_FOR_QID" ]
-					then
-						FILE_NAME_REF=$SERVIENT_VAL_REF_MATCHS_FOR_QID
-						servient_is_valid_ref_sol_path "$FILE_NAME_REF"
-						TEMP=$?
-						if [ $TEMP -eq 0 ]
-						then
-							servient_print_err_fatal " [ $FILE_NAME_REF ] as given by match script is not a valid reference solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-						fi
-					FILE_PART_REF=`echo "$FILE_NAME_REF" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
-					else
-						$FILE_NAME_REF="$SERVIENT_VAL_REF/$FILE_NAME_REF"
-						$FILE_PART_REF="$SERVIENT_VAL_REF/$FILE_PART_REF"
-					fi
-					if [ ! -z "$SERVIENT_VAL_PRS_MATCHS_FOR_QID" ]
-					then
-						FILE_NAME_PROS=$SERVIENT_VAL_PRS_MATCHS_FOR_QID
-						servient_is_valid_ref_sol_path "$FILE_NAME_PROS"
-						TEMP=$?
-						if [ $TEMP -eq 0 ]
-						then
-							servient_print_err_fatal " [ $FILE_NAME_PROS ] as given by match script is not a valid prospective solution path. It should either be a valid file/directory and an absolute path" $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-						fi
-					else
-						FILE_NAME_PROS="$DIR/$FILE_NAME"
-					fi
-					if [ -e "$FILE_NAME_REF" ]
-					then
-						## $FILE_NAME_PROS is what is used to validate $FILE_NAME_REF as a reference script.
-						REF_OP=""
-						OUR_OP=""
-						if [ -e "$FILE_PART_REF.args" ]
-						then
-							VALID_ANSWER=0
-							exec<"$FILE_PART_REF.args"
-							while read line
-							do
-								if [ -f op_ref ]
-								then
-									echo "" > op_ref
-								fi
-								if [ -f op_our ]
-								then
-									echo "" > op_our
-								fi
-								if [ ! -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
-								then
-									SERVIENT_VAL_PRETESTS_FOR_QID &
-									PRETEST_QID=$!
-									if [ -z "$SERVIENT_VAL_DELAY" ]
-									then
-										sleep 2
-									else
-										sleep $SERVIENT_VAL_DELAY
-									fi
-									IS_PRETEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$PRETEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-									if (( $IS_PRETEST_RUNNING ))
-									then
-										kill -s SIGKILL $PRETEST_QID
-									fi
-								fi
-								"$FILE_NAME_REF" $line > op_ref &
-								REF_PID=$!
-								"$FILE_NAME_PROS" $line > op_our
-								OUR_PID=$!
-								if [ -z "$SERVIENT_VAL_DELAY" ]
-								then
-									sleep 2
-								else
-									sleep $SERVIENT_VAL_DELAY
-								fi
-								IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-								IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS="$OUR_PID" '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-								if (( $IS_REF_RUNNING ))
-								then
-									kill -s SIGKILL $REF_PID
-								fi
-								if (( $IS_OUR_RUNNING ))
-								then
-									kill -s SIGKILL $OUR_PID
-								fi
-								REF_PID=wait $REF_PID
-								OUR_PID=wait $OUR_PID
-								if [ $REF_PID -eq 126 -o $REF_PID -eq 127 ]
-								then
-									if (( $VERBOSE_OUTPUT ))
-									then
-										print_screen "Problem running script $FILE_NAME_REF"
-									fi
-									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-								fi
-								if [ $OUR_PID -eq 126 -o $OUR_PID -eq 127 ]
-								then
-									if (( $VERBOSE_OUTPUT ))
-									then
-										print_screen "Problem running script $FILE_NAME_PROS"
-									fi
-									exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-								fi
-								if [ ! -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
-								then
-									SERVIENT_VAL_POSTTESTS_FOR_QID &
-									POSTEST_QID=$!
-									if [ -z "$SERVIENT_VAL_DELAY" ]
-									then
-										sleep 2
-									else
-										sleep $SERVIENT_VAL_DELAY
-									fi		
-									IS_POSTEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$POSTEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-									if (( $IS_POSTEST_RUNNING ))
-									then
-										kill -s SIGKILL $POSTEST_QID
-									fi
-								fi
-								REF_OP=`cat op_ref`
-								OUR_OP=`cat op_our`
-								if [ -z "$USER_ID" ]
-								then
-									USER_ID="$DIR"
-								fi
-								if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
-								then
-									if [ "$REF_OP" = "$OUR_OP" ]
-									then
-										VALID_ANSWER=1
-									else
-										if (( $VERBOSE_OUTPUT ))
-										then
-											print_screen "$USER_ID:$FILE_NAME-Wrong"
-											print_screen "broke for input $line"
-										fi
-										MAGIC_STRING="$MAGIC_STRING 0"
-										VALID_ANSWER=0
-										break
-									fi
-								fi
-							done
-							if (( $VALID_ANSWER ))
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen "$USER_ID:$FILE_NAME-Correct"
-								fi
-								MAGIC_STRING="$MAGIC_STRING 1"
-								SCORE=$(( $SCORE + 1 ))
-							fi
-						else
-							## no args
-							if [ -f op_ref ]
-							then
-								echo "" > op_ref
-							fi
-							if [ -f op_our ]
-							then
-								echo "" > op_our
-							fi
-							if [ ! -z "$SERVIENT_VAL_PRETESTS_FOR_QID" ]
-							then
-								SERVIENT_VAL_PRETESTS_FOR_QID &
-								PRETEST_QID=$!
-								if [ -z "$SERVIENT_VAL_DELAY" ]
-								then
-									sleep 2
-								else
-									sleep $SERVIENT_VAL_DELAY
-								fi
-								IS_PRETEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$PRETEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-								if (( $IS_PRETEST_RUNNING ))
-								then
-									kill -s SIGKILL $PRETEST_QID
-								fi
-							fi
-							"$FILE_NAME_REF" > op_ref &
-							REF_PID=$!
-							"$FILE_NAME_PROS" > op_our &
-							OUR_PID=$!
-							if [ -z "$SERVIENT_VAL_DELAY" ]
-							then
-								sleep 2
-							else
-								sleep $SERVIENT_VAL_DELAY
-							fi
-							IS_REF_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$REF_PID '{for(i=1;i<=NF;i++){if( (match($i,PID	)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
-							IS_OUR_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PID=$OUR_PID '{for(i=1;i<=NF;i++){if( (match($i,PID)== 1) && (length($i) == length(PID)) && !/awk / ){print $i}}}' | wc -l`
-							if (( $IS_REF_RUNNING ))
-							then
-								kill -s SIGKILL $REF_PID
-							fi
-							if (( $IS_OUR_RUNNING ))
-							then
-								kill -s SIGKILL $OUR_PID
-							fi
-							REF_PID=wait $REF_PID
-							OUR_PID=wait $OUR_PID
-							if [ $REF_PID -eq 126 -o $REF_PID -eq 127 ]
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen "Problem running script $FILE_NAME_REF"
-								fi
-								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-							fi
-							if [ $OUR_PID -eq 126 -o $OUR_PID -eq 127 ]
-							then
-								if (( $VERBOSE_OUTPUT ))
-								then
-									print_screen "Problem running script $FILE_NAME_PROS"
-								fi
-								exit 255 ## TODO See http://tldp.org/LDP/abs/html/exitcodes.html
-							fi
-							if [ ! -z "$SERVIENT_VAL_POSTTESTS_FOR_QID" ]
-							then
-								SERVIENT_VAL_POSTTESTS_FOR_QID &
-								POSTEST_QID=$!
-								if [ -z "$SERVIENT_VAL_DELAY" ]
-								then
-									sleep 2
-								else
-									sleep $SERVIENT_VAL_DELAY
-								fi
-								IS_POSTEST_RUNNING=`$SERVIENT_PS_COMMAND_ARGS | awk -v PROCESS=$POSTEST_QID '{for(i=1;i<=NF;i++){if( (match($i,PROCESS)== 1) && (length($i) == length(PROCESS)) ){print $i}}}' | wc -l`
-								if (( $IS_POSTEST_RUNNING ))
-								then
-									kill -s SIGKILL $POSTEST_QID
-								fi
-							fi
-							REF_OP=`cat op_ref`
-							OUR_OP=`cat op_our`
-							if [ -z "$USER_ID" ]
-							then
-								USER_ID="$DIR"
-							fi
-							if ( [ ! -z "$REF_OP"  ]  && [ ! -z "$OUR_OP"  ] )
-							then
-								if [ "$REF_OP" = "$OUR_OP" ]
-								then
-									if (( $VERBOSE_OUTPUT ))
-									then
-										print_screen "$USER_ID:$FILE_NAME-Correct"
-									fi
-									MAGIC_STRING="$MAGIC_STRING 1"
-									SCORE=$(( $SCORE + 1 ))
-								else
-									if (( $VERBOSE_OUTPUT ))
-									then
-									 	print_screen "$USER_ID:$FILE_NAME-Wrong"
-									fi
-									MAGIC_STRING="$MAGIC_STRING 0"
-								fi
-							fi
-						fi
-					fi
-				done
-				MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-				echo "$DIR#$MAGIC_STRING,$SCORE" >> "$SERVIENT_VAL_RES_FILE"
-			else
-				if (( $VERBOSE_OUTPUT ))
-				then
-					print_screen "Cant find valid user information"
-					print_screen "Skipping $DIR"
-				fi
-				cd $PARENT_DIR
-			fi
-		fi
-	done
-	if [ -f op_ref ]
-	then
-		rm -f op_ref
-	fi
-	if [ -f op_our ]
-	then
-		rm -f op_our
-	fi
-elif [ $SERVINET_NO_NPARGS -eq 2 ]
-then
-	## TODO branch here. $SERVIENT_VAL_TOP_DIR is null if SERVIENT_VAL_SOL is not a directory.
-	## Means we are mostly testing files.
-## Non batch mode .. todo
-	rm -f "$SOLUTION_SCRIPTS_DIR_NAME"/"$REPORT_FILE"
-	find "$SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
-	if ( [ "$SOLUTION_SCRIPTS_DIR_NAME" != "$REFERENCE_SCRIPTS_DIR_NAME" ] )
-	then
-		DIR=`echo "$SOLUTION_SCRIPTS_DIR_NAME"|awk -F "/" '{ print $NF; }'` # DIR contains the last part of the SOL script name, used to user_info.txt thing
-		MAGIC_STRING=""
-		SCORE=0
-		USER_ID=$(get_user_id)
-		if [ -z "$USER_ID"  ]
-		then
-			USER_ID=$DIR #TODO: TAKE LAST PART OF SOL_DIR PATH
-		fi
-		if ( [ ! -z "$USER_ID"  ] )
-		then
-			FILES=`find "$SOLUTION_SCRIPTS_DIR_NAME" -maxdepth 1 -name "*" -type f`
-			for FILE in $FILES
-			do
-				FILE_NAME=`echo $FILE|awk -F "/" '{print $NF;}'`
-				FILE_PART=`echo "$FILE_NAME" | awk -F "." '{ for (i = 1; i < NF; i++)print $i }'`
-				## TODO : See mee and find a clean way to do what is being done here.
-				if [ "$FILE_NAME" = "${DIR}_$USER_INFO_FILE_NAME" ]
-				then
-					continue
-				fi
-				if [ -e "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" ]
-				then
-					VALID_ANSWER=0
-					TEMP=`grep -n "^exec" "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce" | wc -l`
-					while (( $TEMP ))
-					do
-						sed -i '/exec\(.*\)\;/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
-						let TEMP-=1
-					done
-					sed -i '/^\(errcatch.-1,.stop..\)/d' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
-					export STUDENT_FILE="$SOLUTION_SCRIPTS_DIR_NAME/$FILE_NAME"
-					perl -pi -e 'print "exec $ENV{\"STUDENT_FILE\"};\n" if $. == 1' "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
-					perl -pi -e "print \"errcatch(-1,\'stop\');\n\" if $. == 1" "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
-					sed -i 's/\(disp(.*)\)/\/\/\1/' "$FILE" ## XXX: Was FILE_NAME
-					scilab -nb -nwni -f "$REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"  > "$SOLUTION_SCRIPTS_DIR_NAME/OP" &
-					REF_PID=$!
-					if [ -z "$SCRIPT_DELAY" ]
-					then
-						sleep 2
-					else
-						sleep $SCRIPT_DELAY
-					fi
-					if [ -z $REF_PID ]
-					then
-						if (( $VERBOSE_OUTPUT ))
-						then
-							echo "Problem running script $REFERENCE_SCRIPTS_DIR_NAME/$FILE_PART.sce"
-						fi
-						exit 255
-					fi
-					IS_REF_RUNNING=`ps aux | grep -w "$REF_PID" | grep -v grep | wc -l`
-					if (( $IS_REF_RUNNING ))
-					then
-						kill -s SIGKILL $REF_PID
-					fi
-					###
-					sed -i -e 's/[\t ]//g;/^$/d' "$SOLUTION_SCRIPTS_DIR_NAME/OP"
-					TEMP=0
-					##Temp=0, for the first iteration of the loop only
-					while read line
-					do
-						if ( [ "$line" = "T" ] && ( (( $VALID_ANSWER )) || (( ! $TEMP )) ) )
-						then
-							VALID_ANSWER=1
-						else
-							VALID_ANSWER=0
-						fi
-						let TEMP+=1
-					done < "$SOLUTION_SCRIPTS_DIR_NAME/OP"
-					####
-					if (( $VALID_ANSWER ))
-					then
-						if (( $VERBOSE_OUTPUT ))
-						then
-							echo "$USER_ID:$FILE_NAME-Correct"
-						fi
-						MAGIC_STRING="$MAGIC_STRING {$FILE_PART=1}"
-						SCORE=$(( $SCORE + 1 ))
-					else
-						if (( $VERBOSE_OUTPUT ))
-						then
-							echo "$USER_ID:$FILE_NAME-Wrong"
-						fi
-						MAGIC_STRING="$MAGIC_STRING {$FILE_PART=0}"
-					fi
-				else
-					if (( $VERBOSE_OUTPUT ))
-					then
-						echo "Directory[$REFERENCE_SCRIPTS_DIR_NAME] does not contain $FILE_PART.sce"
-					fi
-				fi
-			done
-			MAGIC_STRING=`echo $MAGIC_STRING|sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "$USER_ID#$MAGIC_STRING,$SCORE" | cat >> "$SOLUTION_SCRIPTS_DIR_NAME/$REPORT_FILE"
-		else
-			if (( $VERBOSE_OUTPUT ))
-			then
-				echo "Cant find valid user information"
-				echo "Skipping $DIR"
-			fi
-		fi
-	fi
-	find "$	SOLUTION_SCRIPTS_DIR_NAME" -name "OP" -exec rm -f {} \;
-else
-	print_err "Unkown condition encountered"
-	print_err " If you believe this is an error, please consider filing a bug report"
-	show_help_screen
-	exit $SERVIENT_EXIT_ERROR_SCRIPT_CONFIG
-fi
-
+## Placeholder ##
 ##########################Function:servient_plugin_finder########################################################
-#Purpose:Loads scripts at runtime to dynamically modify the behavior of servient at runtime.			#
-#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity		#
+#Purpose:Loads scripts at runtime to dynamically modify the behavior of servient at runtime.					#
+#Argument1: QID: Mandatory and constrained to be non null, QID is only checked for syntactical validity			#
 #Argument2: Meta Directory path: Mandatory and constrained to be non null and an absolute path that points to 	#
-#	    a directory.											#
+#	    a directory.																							#
 #Argument3: Type of behaviour to overload: Mandatory and case sensitive. Constrained to be a valid choice from	#
-#	    the list given below:										#
-#	     TODO: PUT LIST											#
+#	    the list given below:																					#
+#	     TODO: PUT LIST																							#
 #Argument4: Reference path: Mandatory and constrained to be non null and an absolute path that points to either	#
-#	     to a file or directory.										#
+#	     to a file or directory.																				#
 #Argument5: Prospective solution Directory path: Optional and can be null. If present should be an absolute path#
-#	    that points to a file or directory									#
-#Returns: The value depends mainly on argument 3								#
-#	  TODO: TBD												#
+#	    that points to a file or directory																		#
+#Returns: The value depends mainly on argument 3																#
+#	  TODO: TBD																									#
 #Notes: No un-unnecessary checks are done in this function to verify that the Argument set (Argument1, Argument2#
-#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.	#
-#	Any script selected by this function can force default behavior for the behavior it was supposed to	#
-#		modify  by returning a non zero integer value							#
-#	This function should only be called if run time plugin selection was asked for, hence meta directory	#
-#		will be set and should be valid.								#
+#		Argument4,Argument5, Passed only if non null) actually points to a valid question tuple.				#
+#	Any script selected by this function can force default behavior for the behavior it was supposed to			#
+#		modify  by returning a non zero integer value															#
+#	This function should only be called if run time plugin selection was asked for, hence meta directory		#
+#		will be set and should be valid.																		#
 #################################################################################################################
-
 servient_plugin_finder()
 {
         FUNC_NAME="servient_plugin_finder"
@@ -1129,7 +703,6 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_PRS_EXE does not have executable bit" 3
 		fi
 	fi
-####
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
 	then
 		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_MATCH_REF_EXE" ]
@@ -1158,7 +731,6 @@ servient_plugin_finder()
 			print_err_verblvl "[$FUNC_NAME] $2/$SERVIENT_PLGN_MATCH_REF_EXE does not have executable bit" 3
 		fi
 	fi
-####
 	if [ -e "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]
 	then
 		if [ -x "$2"/"$1"/"$SERVIENT_PLGN_PRETEST_EXE" ]

@@ -16,10 +16,10 @@ is used which is 2. Verbsority level of upto file can be given, greater values
 are forced to be 5.
 13) create functions get_userinfo_file and is_userinfo_file. Also create function
 to defer userinfo file selection to runtime. (all has to follow specs,related to 0).
-14) Bring Changes in 03~scilab~1 into this repo
+14) Bring Changes in 03~scilab~1 into this repo 
 15) Remove all occurances of bash (this includes in syntax checking code for plugins,etc).
 16) Fix all calls to is_path_absolute, to follow the new logic.
 17) **IMP** Depend on dos2unix and/or convert all files from DOS to unix format.
 18) **IMP**  Ability to overload just get_user_id or only which file is selected for
 get_user_id independently [PARTIALLY DONE]
-20)
+20)Pretest,posttest take return value into consideration and pass required args to the scripts.
