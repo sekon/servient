@@ -1,13 +1,13 @@
 #!/bin/sh
 #################################################################################################
-#Purpose: <To be done>																			#
-#Primary Author: Harish Badrinath < harish [at] fossee.in>										#
-#Taken Over date/Creation date: Sun, 06 Nov 2011 21:38:58 +0530									#
-#Taken Over by:																					#
-#Taken Over date:																				#
-#Date of last commit:Sun, 15 Jul 2012 22:56:52 +0530											#
-#License: GPL V3 +																				#
-#Internal Version Number: See $SERVIENT_VERSION_NUMBER 											#
+#Purpose: <To be done>																																					#
+#Primary Author: Harish Badrinath < harish [at] fossee.in>																			#
+#Taken Over date/Creation date: Sun, 06 Nov 2011 21:38:58 +0530																	#
+#Taken Over by:																																									#
+#Taken Over date:																																								#
+#Date of last commit:Sun, 15 Jul 2012 22:56:52 +0530																						#
+#License: GPL V3 +																																							#
+#Internal Version Number: See $SERVIENT_VERSION_NUMBER 																					#
 #################################################################################################
 
 SERVIENT_INSTALL_DIR=`dirname $0` ## TODO :: Make the install script change this to install location.
@@ -42,9 +42,9 @@ get_user_id ()
 	fi
 }
 ########################## Function: is_path_absolute ###########################################################
-#Purpose: Returns numerical 1, if the first argument passed to the function is 	an absolute path 0 otherwise.	#
-#Arguments: 1, The path string to be tested to see if it is an absolute path.									#
-#Notes: None																									#
+#Purpose: Returns numerical 1, if the first argument passed to the function is 	an absolute path 0 otherwise.		#
+#Arguments: 1, The path string to be tested to see if it is an absolute path.																		#
+#Notes: None																																																		#
 #################################################################################################################
 is_path_absolute()
 {

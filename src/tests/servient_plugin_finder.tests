@@ -1,0 +1,79 @@
+MY_ROOT_DIR="/tmp/servient_test"
+ARG1="tmp/" #QID
+ARG2="$MY_ROOT_DIR/META"
+ARG3="PLGN_MDSLCT_ALL"
+ARG4="$MY_ROOT_DIR/REF"
+ARG5="$MY_ROOT_DIR/SOL"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+TEMP=$?
+if [ $TEMP -eq 1 ]
+then
+	echo "QID : [$ARG1] is valid"
+else
+	echo "QID : [$ARG1] is not valid"
+fi
+ARG1="9999"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+TEMP=$?
+if [ $TEMP -eq 1 ]
+then
+	echo "QID : [$ARG1] is valid"
+else
+	echo "QID : [$ARG1] is not valid"
+fi
+ARG1="/ABcd9999"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+TEMP=$?
+if [ $TEMP -eq 1 ]
+then
+	echo "QID : [$ARG1] is valid"
+else
+	echo "QID : [$ARG1] is not valid"
+fi
+ARG1="ABcd9999"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+TEMP=$?
+if [ $TEMP -eq 1 ]
+then
+	echo "QID : [$ARG1] is valid"
+else
+	echo "QID : [$ARG1] is not valid"
+fi
+echo "Starting the serious tests"
+mkdir -p "$ARG2"
+mkdir -p "$ARG4"
+mkdir -p "$ARG5"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+echo "Test A-1 complete"
+touch "$MY_ROOT_DIR/$SERVIENT_PLGN_UINFO_EXE"
+chmod a-x "$MY_ROOT_DIR/$SERVIENT_PLGN_UINFO_EXE"
+touch "$MY_ROOT_DIR/$SERVIENT_PLGN_MATCH_EXE"
+chmod a-x "$MY_ROOT_DIR/$SERVIENT_PLGN_MATCH_EXE"
+touch "$MY_ROOT_DIR/$SERVIENT_PLGN_PRETEST_EXE"
+chmod a-x "$MY_ROOT_DIR/$SERVIENT_PLGN_PRETEST_EXE"
+touch "$MY_ROOT_DIR/$SERVIENT_PLGN_POSTTEST_EXE"
+chmod a-x "$MY_ROOT_DIR/$SERVIENT_PLGN_POSTTEST_EXE"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+echo "Test A-2 complete"
+chmod a+x "$MY_ROOT_DIR/$SERVIENT_PLGN_UINFO_EXE"
+chmod a+x "$MY_ROOT_DIR/$SERVIENT_PLGN_MATCH_EXE"
+chmod a+x "$MY_ROOT_DIR/$SERVIENT_PLGN_PRETEST_EXE"
+chmod a+x "$MY_ROOT_DIR/$SERVIENT_PLGN_POSTTEST_EXE"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+echo "Test A-3 complete"
+touch "$ARG2/$SERVIENT_PLGN_UINFO_EXE"
+chmod a-x "$ARG2/$SERVIENT_PLGN_UINFO_EXE"
+touch "$ARG2/$SERVIENT_PLGN_MATCH_EXE"
+chmod a-x "$ARG2/$SERVIENT_PLGN_MATCH_EXE"
+touch "$ARG2/$SERVIENT_PLGN_PRETEST_EXE"
+chmod a-x "$ARG2/$SERVIENT_PLGN_PRETEST_EXE"
+touch "$ARG2/$SERVIENT_PLGN_POSTTEST_EXE"
+chmod a-x "$ARG2/$SERVIENT_PLGN_POSTTEST_EXE"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+echo "Test B-1 Complete"
+chmod a+x "$ARG2/$SERVIENT_PLGN_UINFO_EXE"
+chmod a+x "$ARG2/$SERVIENT_PLGN_MATCH_EXE"
+chmod a+x "$ARG2/$SERVIENT_PLGN_PRETEST_EXE"
+chmod a+x "$ARG2/$SERVIENT_PLGN_POSTTEST_EXE"
+servient_plugin_finder "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+echo "Test B-2 Complete"
