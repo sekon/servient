@@ -1,0 +1,35 @@
+ARGS="sleep 50"
+servient_waitKill_process $ARGS
+TEMP=$?
+if [ $TEMP -eq 126 -o $TEMP -eq 127 ]
+then
+		FILE_NAME=`echo "$ARGS"|awk -F " " '{print $1}'`
+		print_screen "Problem running script $FILE_NAME"
+fi
+
+ARGS=`cat /dev/urandom | tr -dc A-Za-z0-9_ | head -c8`
+servient_waitKill_process $ARGS
+TEMP=$?
+if [ $TEMP -eq 126 -o $TEMP -eq 127 ]
+then
+                FILE_NAME=`echo "$ARGS"|awk -F " " '{print $1}'`
+                print_screen "Problem running script $FILE_NAME"
+fi
+
+ARGS="true 10 20"
+servient_waitKill_process $ARGS
+TEMP=$?
+if [ $TEMP -eq 126 -o $TEMP -eq 127 ]
+then
+                FILE_NAME=`echo "$ARGS"|awk -F " " '{print $1}'`
+                print_screen "Problem running script $FILE_NAME"
+fi
+
+ARGS="false 100 200"
+servient_waitKill_process $ARGS
+TEMP=$?
+if [ $TEMP -eq 126 -o $TEMP -eq 127 ]
+then
+                FILE_NAME=`echo "$ARGS"|awk -F " " '{print $1}'`
+                print_screen "Problem running script $FILE_NAME"
+fi
